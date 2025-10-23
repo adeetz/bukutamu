@@ -161,13 +161,13 @@ export default function Home() {
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {/* Foto atau Avatar */}
-                <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center overflow-hidden">
+                <div className="relative h-32 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center overflow-hidden">
                   {item.fotoUrl ? (
                     <Image
                       src={item.fotoUrl}
                       alt={item.nama}
                       fill
-                      className="object-cover scale-75"
+                      className="object-cover"
                       loading="lazy"
                       unoptimized
                     />
