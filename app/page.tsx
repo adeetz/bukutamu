@@ -14,12 +14,20 @@ interface BukuTamu {
   createdAt: string;
 }
 
+interface Settings {
+  logoUrl: string | null;
+  organizationName: string;
+  welcomeText: string | null;
+}
+
 export default function Home() {
   const [data, setData] = useState<BukuTamu[]>([]);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
+    fetchSettings();
 
     // Auto-refresh setiap 10 detik untuk tampilan TV
     const intervalId = setInterval(() => {
@@ -29,6 +37,18 @@ export default function Home() {
     // Cleanup interval saat component unmount
     return () => clearInterval(intervalId);
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      const result = await response.json();
+      if (result.success) {
+        setSettings(result.data);
+      }
+    } catch (error) {
+      // Silently fail
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -59,18 +79,40 @@ export default function Home() {
         <div className="glass-effect rounded-2xl p-8 md:p-10 mb-8 animate-fade-in">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg">
-                  📖
-                </div>
+              <div className="flex items-center gap-4 mb-4">
+                {/* Logo */}
+                {settings?.logoUrl ? (
+                  <div className="w-20 h-20 md:w-24 md:h-24 relative flex-shrink-0 rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-100">
+                    <Image
+                      src={settings.logoUrl}
+                      alt={settings.organizationName}
+                      fill
+                      className="object-contain p-2"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg">
+                    📖
+                  </div>
+                )}
+                
+                {/* Title */}
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold gradient-text leading-tight">
                     Buku Tamu Digital
                   </h1>
+                  {settings?.organizationName && (
+                    <p className="text-lg md:text-xl font-semibold text-gray-700 mt-1">
+                      {settings.organizationName}
+                    </p>
+                  )}
                 </div>
               </div>
+              
+              {/* Welcome Text or Default */}
               <p className="text-gray-600 text-lg mb-4 ml-1">
-                Daftar pengunjung yang telah mengisi buku tamu
+                {settings?.welcomeText || 'Daftar pengunjung yang telah mengisi buku tamu'}
               </p>
               <div className="flex flex-wrap items-center gap-3 ml-1">
                 <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">

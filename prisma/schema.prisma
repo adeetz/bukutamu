@@ -29,3 +29,13 @@ model Admin {
 
   @@map("admin")
 }
+
+model Settings {
+  id               Int      @id @default(1)
+  logoUrl          String?  @db.VarChar(500)
+  organizationName String   @default("Diskominfo Tanah Bumbu") @db.VarChar(255)
+  welcomeText      String?  @db.Text
+  updatedAt        DateTime @updatedAt
+
+  @@map("settings")
+}

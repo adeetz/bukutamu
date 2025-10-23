@@ -3,15 +3,23 @@
 import { useState, FormEvent, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import { loadRecaptchaScript, executeRecaptcha } from '@/lib/recaptcha';
 
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
 
+interface Settings {
+  logoUrl: string | null;
+  organizationName: string;
+  welcomeText: string | null;
+}
+
 export default function FormPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [formData, setFormData] = useState({
     nama: '',
     alamat: '',
@@ -25,6 +33,22 @@ export default function FormPage() {
   const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await fetch('/api/settings');
+      const result = await response.json();
+      if (result.success) {
+        setSettings(result.data);
+      }
+    } catch (error) {
+      // Silently fail
+    }
+  };
 
   const startCamera = async () => {
     try {
@@ -223,7 +247,30 @@ export default function FormPage() {
 
         <div className="glass-effect rounded-2xl p-6 md:p-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="text-center mb-8">
-            <div className="text-5xl mb-4">✍️</div>
+            {/* Logo */}
+            {settings?.logoUrl ? (
+              <div className="flex justify-center mb-4">
+                <div className="w-24 h-24 md:w-32 md:h-32 relative rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-100">
+                  <Image
+                    src={settings.logoUrl}
+                    alt={settings.organizationName}
+                    fill
+                    className="object-contain p-3"
+                    unoptimized
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="text-5xl mb-4">✍️</div>
+            )}
+            
+            {/* Organization Name */}
+            {settings?.organizationName && (
+              <p className="text-lg md:text-xl font-semibold text-gray-700 mb-2">
+                {settings.organizationName}
+              </p>
+            )}
+            
             <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-3">
               Isi Buku Tamu
             </h1>

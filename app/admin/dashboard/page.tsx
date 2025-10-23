@@ -359,7 +359,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <button
                 onClick={() => handleOpenModal()}
                 className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
@@ -372,6 +372,12 @@ export default function AdminDashboard() {
                 className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl disabled:cursor-not-allowed"
               >
                 {exporting ? '⏳ Exporting...' : '📥 Export Excel'}
+              </button>
+              <button
+                onClick={() => router.push('/admin/settings')}
+                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
+              >
+                ⚙️ Pengaturan
               </button>
               <a
                 href="/"
