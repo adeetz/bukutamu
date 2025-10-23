@@ -29,12 +29,7 @@ export default function Home() {
     fetchData();
     fetchSettings();
 
-    // Auto-refresh setiap 30 detik untuk tampilan TV (diperpanjang untuk performa)
-    const intervalId = setInterval(() => {
-      fetchData();
-    }, 30000);
-
-    // Cleanup interval saat component unmount
+    const intervalId = setInterval(fetchData, 30000);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -46,7 +41,7 @@ export default function Home() {
         setSettings(result.data);
       }
     } catch (error) {
-      // Silently fail
+      
     }
   };
 
@@ -56,7 +51,7 @@ export default function Home() {
       const result = await response.json();
       setData(result.data || []);
     } catch (error) {
-      // Silently fail and show empty state
+      
     } finally {
       setLoading(false);
     }
@@ -75,12 +70,12 @@ export default function Home() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section with Glass Effect */}
+
         <div className="glass-effect rounded-2xl p-8 md:p-10 mb-8 animate-fade-in">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-6 mb-4">
-                {/* Logo */}
+
                 {settings?.logoUrl && typeof settings.logoUrl === 'string' ? (
                   <div className="flex-shrink-0">
                     <img
@@ -94,8 +89,7 @@ export default function Home() {
                     📖
                   </div>
                 )}
-                
-                {/* Title */}
+
                 <div className="flex-1">
                   <h1 className="text-3xl md:text-5xl font-bold gradient-text leading-tight">
                     Buku Tamu Digital
@@ -107,8 +101,7 @@ export default function Home() {
                   )}
                 </div>
               </div>
-              
-              {/* Welcome Text */}
+
               {settings?.welcomeText && (
                 <p className="text-gray-600 text-lg mb-4 ml-1">
                   {settings.welcomeText}
@@ -162,7 +155,7 @@ export default function Home() {
                 className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                {/* Foto atau Avatar */}
+
                 <div className="relative h-32 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center overflow-hidden">
                   {item.fotoUrl ? (
                     <Image
@@ -180,7 +173,7 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Konten */}
+
                 <div className="p-4 space-y-2">
                   <h2 className="text-lg font-bold text-gray-800 truncate">
                     {item.nama}

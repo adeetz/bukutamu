@@ -39,7 +39,6 @@ export default function SettingsPage() {
       const res = await fetch('/api/settings');
       if (res.ok) {
         const data = await res.json();
-        console.log('Settings loaded:', data.data); // Debug
         setSettings(data.data);
         setFormData({
           organizationName: data.data.organizationName || '',
@@ -48,7 +47,6 @@ export default function SettingsPage() {
         });
       }
     } catch (error) {
-      console.error('Load settings error:', error);
       toast.error('Gagal memuat pengaturan');
     }
   }
@@ -57,7 +55,6 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('File harus berupa gambar');
       return;
@@ -67,37 +64,30 @@ export default function SettingsPage() {
     const loadingToast = toast.loading('Mengupload logo...');
 
     try {
-      // Compress image
       const compressed = await imageCompression(file, {
         maxSizeMB: 1,
         maxWidthOrHeight: 500,
         useWebWorker: true
       });
 
-      // Create form data
       const uploadData = new FormData();
       uploadData.append('file', compressed);
 
-      // Upload to R2
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: uploadData
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('Upload failed:', errorData);
-        throw new Error(errorData.error || 'Upload failed');
+        const errorData = await res.json().catch(() => ({ error: 'Upload gagal' }));
+        throw new Error(errorData.error || 'Upload gagal');
       }
 
       const data = await res.json();
-      
-      // Update form data with new logo URL
       setFormData(prev => ({ ...prev, logoUrl: data.url }));
       toast.success('Logo berhasil diupload', { id: loadingToast });
 
     } catch (error: any) {
-      console.error('Upload error:', error);
       toast.error('Gagal upload logo', { id: loadingToast });
     } finally {
       setUploading(false);
@@ -109,8 +99,6 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
-      console.log('Submitting settings:', formData); // Debug log
-      
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -118,17 +106,15 @@ export default function SettingsPage() {
       });
 
       const data = await res.json();
-      console.log('Response:', data); // Debug log
 
       if (!res.ok) {
-        throw new Error(data.message || 'Update failed');
+        throw new Error(data.message || 'Gagal menyimpan');
       }
 
       toast.success('Pengaturan berhasil disimpan');
-      loadSettings(); // Reload settings
+      loadSettings();
 
     } catch (error: any) {
-      console.error('Save settings error:', error); // Debug log
       toast.error(error.message || 'Gagal menyimpan pengaturan');
     } finally {
       setLoading(false);
