@@ -86,15 +86,12 @@ export default function Home() {
                   {settingsLoading ? (
                     <div className="flex-shrink-0 w-28 h-28 md:w-36 md:h-36 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
                   ) : settings?.logoUrl && typeof settings.logoUrl === 'string' ? (
-                    <div className="flex-shrink-0 animate-fade-in relative group">
-                      <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity blur-lg"></div>
-                      <div className="relative p-3 bg-white rounded-2xl shadow-xl ring-1 ring-gray-900/5">
-                        <img
-                          src={settings.logoUrl}
-                          alt={settings.organizationName || 'Logo'}
-                          className="w-20 h-20 md:w-28 md:h-28 object-contain"
-                        />
-                      </div>
+                    <div className="flex-shrink-0 animate-fade-in">
+                      <img
+                        src={settings.logoUrl}
+                        alt={settings.organizationName || 'Logo'}
+                        className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-lg"
+                      />
                     </div>
                   ) : (
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg animate-fade-in">
