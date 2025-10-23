@@ -29,10 +29,10 @@ export default function Home() {
     fetchData();
     fetchSettings();
 
-    // Auto-refresh setiap 10 detik untuk tampilan TV
+    // Auto-refresh setiap 30 detik untuk tampilan TV (diperpanjang untuk performa)
     const intervalId = setInterval(() => {
       fetchData();
-    }, 10000);
+    }, 30000);
 
     // Cleanup interval saat component unmount
     return () => clearInterval(intervalId);
@@ -52,7 +52,7 @@ export default function Home() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/buku-tamu?limit=100');
+      const response = await fetch('/api/buku-tamu?limit=20');
       const result = await response.json();
       setData(result.data || []);
     } catch (error) {
@@ -163,10 +163,13 @@ export default function Home() {
                 {/* Foto atau Avatar */}
                 <div className="relative h-32 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center overflow-hidden">
                   {item.fotoUrl ? (
-                    <img
+                    <Image
                       src={item.fotoUrl}
                       alt={item.nama}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      loading="lazy"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
