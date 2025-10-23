@@ -163,14 +163,16 @@ export default function Home() {
                 {/* Foto atau Avatar */}
                 <div className="relative h-32 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center overflow-hidden">
                   {item.fotoUrl ? (
-                    <Image
-                      src={item.fotoUrl}
-                      alt={item.nama}
-                      fill
-                      className="object-cover"
-                      loading="lazy"
-                      unoptimized
-                    />
+                    <div className="relative w-full h-full p-2">
+                      <Image
+                        src={item.fotoUrl}
+                        alt={item.nama}
+                        fill
+                        className="object-contain"
+                        loading="lazy"
+                        unoptimized
+                      />
+                    </div>
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
                       {item.nama.charAt(0).toUpperCase()}
