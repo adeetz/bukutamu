@@ -24,6 +24,7 @@ export default function Home() {
   const [data, setData] = useState<BukuTamu[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   useEffect(() => {
     fetchData();
@@ -42,6 +43,8 @@ export default function Home() {
       }
     } catch (error) {
       
+    } finally {
+      setSettingsLoading(false);
     }
   };
 
@@ -76,8 +79,10 @@ export default function Home() {
             <div className="flex-1">
               <div className="flex items-center gap-6 mb-4">
 
-                {settings?.logoUrl && typeof settings.logoUrl === 'string' ? (
-                  <div className="flex-shrink-0">
+                {settingsLoading ? (
+                  <div className="flex-shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
+                ) : settings?.logoUrl && typeof settings.logoUrl === 'string' ? (
+                  <div className="flex-shrink-0 animate-fade-in">
                     <img
                       src={settings.logoUrl}
                       alt={settings.organizationName || 'Logo'}
@@ -85,7 +90,7 @@ export default function Home() {
                     />
                   </div>
                 ) : (
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl shadow-lg animate-fade-in">
                     📖
                   </div>
                 )}
@@ -94,19 +99,23 @@ export default function Home() {
                   <h1 className="text-3xl md:text-5xl font-bold gradient-text leading-tight">
                     Buku Tamu Digital
                   </h1>
-                  {settings?.organizationName && (
-                    <p className="text-base md:text-xl font-semibold text-gray-700 mt-2">
+                  {settingsLoading ? (
+                    <div className="h-7 md:h-8 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg mt-2 w-48 animate-pulse"></div>
+                  ) : settings?.organizationName ? (
+                    <p className="text-base md:text-xl font-semibold text-gray-700 mt-2 animate-fade-in">
                       {settings.organizationName}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
-              {settings?.welcomeText && (
-                <p className="text-gray-600 text-lg mb-4 ml-1">
+              {settingsLoading ? (
+                <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg mb-4 ml-1 w-full max-w-md animate-pulse"></div>
+              ) : settings?.welcomeText ? (
+                <p className="text-gray-600 text-lg mb-4 ml-1 animate-fade-in">
                   {settings.welcomeText}
                 </p>
-              )}
+              ) : null}
               <div className="flex flex-wrap items-center gap-3 ml-1">
                 <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                   <div className="flex items-center gap-2">
