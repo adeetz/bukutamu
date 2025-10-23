@@ -21,7 +21,9 @@ const nextConfig: NextConfig = {
       //   hostname: 'your-domain.com',
       // },
     ],
-    unoptimized: false,
+    unoptimized: true, // Set to true to avoid optimization issues with R2
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'inline',
   },
   // Production optimizations
   productionBrowserSourceMaps: false,

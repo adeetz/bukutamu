@@ -172,16 +172,14 @@ export default function SettingsPage() {
               </label>
               
               {/* Preview */}
-              {formData.logoUrl && (
-                <div className="mb-4 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-300">
+              {formData.logoUrl && typeof formData.logoUrl === 'string' && formData.logoUrl.trim() !== '' && (
+                <div className="mb-6">
                   <div className="flex items-center justify-center">
-                    <div className="relative w-64 h-64 bg-white rounded-lg shadow-md p-4">
-                      <Image
+                    <div className="relative">
+                      <img
                         src={formData.logoUrl}
                         alt="Logo Preview"
-                        fill
-                        className="object-contain p-2"
-                        unoptimized
+                        className="w-48 h-48 object-contain drop-shadow-2xl"
                         onError={(e) => {
                           console.error('Image load error:', formData.logoUrl);
                           toast.error('Gagal memuat preview logo');

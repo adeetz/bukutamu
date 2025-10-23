@@ -248,18 +248,13 @@ export default function FormPage() {
         <div className="glass-effect rounded-2xl p-6 md:p-10 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <div className="text-center mb-8">
             {/* Logo */}
-            {settings?.logoUrl ? (
+            {settings?.logoUrl && typeof settings.logoUrl === 'string' ? (
               <div className="flex justify-center mb-6">
-                <div className="w-28 h-28 md:w-36 md:h-36 relative rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-200 p-4">
-                  <Image
-                    src={settings.logoUrl}
-                    alt={settings.organizationName}
-                    fill
-                    className="object-contain"
-                    unoptimized
-                    priority
-                  />
-                </div>
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.organizationName || 'Logo'}
+                  className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-2xl"
+                />
               </div>
             ) : (
               <div className="text-5xl mb-4">✍️</div>

@@ -13,11 +13,6 @@ export const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
 export const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || '';
 
 export function getPublicImageUrl(key: string): string {
-  // For settings/logo, use direct R2 URL
-  // For user photos in buku tamu, use API route for security
-  if (key.startsWith('logo-')) {
-    return `${R2_PUBLIC_URL}/${key}`;
-  }
-  // Use our own API route to serve images (with security checks)
+  // All images (including logo) use API route for security and consistent access
   return `/api/images/${key}`;
 }

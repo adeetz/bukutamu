@@ -81,15 +81,12 @@ export default function Home() {
             <div className="flex-1">
               <div className="flex items-center gap-6 mb-4">
                 {/* Logo */}
-                {settings?.logoUrl ? (
-                  <div className="w-24 h-24 md:w-32 md:h-32 relative flex-shrink-0 rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-200 p-3">
-                    <Image
+                {settings?.logoUrl && typeof settings.logoUrl === 'string' ? (
+                  <div className="flex-shrink-0">
+                    <img
                       src={settings.logoUrl}
-                      alt={settings.organizationName}
-                      fill
-                      className="object-contain"
-                      unoptimized
-                      priority
+                      alt={settings.organizationName || 'Logo'}
+                      className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl"
                     />
                   </div>
                 ) : (
@@ -164,14 +161,12 @@ export default function Home() {
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {/* Foto atau Avatar */}
-                <div className="relative h-32 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                <div className="relative h-32 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center overflow-hidden">
                   {item.fotoUrl ? (
-                    <Image
+                    <img
                       src={item.fotoUrl}
                       alt={item.nama}
-                      fill
-                      className="object-cover"
-                      unoptimized
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
