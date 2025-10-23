@@ -343,92 +343,100 @@ export default function AdminDashboard() {
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="glass-effect rounded-2xl p-6 md:p-8 mb-8 animate-fade-in">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-3">
-                🎯 Admin Dashboard
-              </h1>
-              <p className="text-gray-600 text-lg">
-                Selamat datang, <span className="font-semibold">{user.name}</span>
-              </p>
-              <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  {pagination.total} Total Pengunjung
-                </span>
-              </div>
+        <div className="glass-effect rounded-2xl p-4 sm:p-6 md:p-8 mb-6 md:mb-8 animate-fade-in">
+          {/* Title Section */}
+          <div className="mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-2">
+              🎯 Admin Dashboard
+            </h1>
+            <p className="text-gray-600 text-base sm:text-lg">
+              Selamat datang, <span className="font-semibold">{user.name}</span>
+            </p>
+            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                {pagination.total} Total Pengunjung
+              </span>
             </div>
-            <div className="flex gap-3 flex-wrap">
-              <button
-                onClick={() => handleOpenModal()}
-                className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
-              >
-                ➕ Tambah Data
-              </button>
-              <button
-                onClick={handleExport}
-                disabled={exporting}
-                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl disabled:cursor-not-allowed"
-              >
-                {exporting ? '⏳ Exporting...' : '📥 Export Excel'}
-              </button>
-              <button
-                onClick={() => router.push('/admin/settings')}
-                className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
-              >
-                ⚙️ Pengaturan
-              </button>
-              <a
-                href="/"
-                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
-              >
-                🏠 Beranda
-              </a>
-              <button
-                onClick={handleLogout}
-                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
-              >
-                🚪 Logout
-              </button>
-            </div>
+          </div>
+
+          {/* Action Buttons - Mobile Friendly Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+            <button
+              onClick={() => handleOpenModal()}
+              className="w-full px-4 py-3 sm:py-3.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
+            >
+              <span className="block sm:inline">➕</span>
+              <span className="block sm:inline sm:ml-1">Tambah Data</span>
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="w-full px-4 py-3 sm:py-3.5 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl disabled:cursor-not-allowed text-sm sm:text-base"
+            >
+              <span className="block sm:inline">{exporting ? '⏳' : '📥'}</span>
+              <span className="block sm:inline sm:ml-1">{exporting ? 'Export...' : 'Export Excel'}</span>
+            </button>
+            <button
+              onClick={() => router.push('/admin/settings')}
+              className="w-full px-4 py-3 sm:py-3.5 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
+            >
+              <span className="block sm:inline">⚙️</span>
+              <span className="block sm:inline sm:ml-1">Pengaturan</span>
+            </button>
+            <a
+              href="/"
+              className="w-full px-4 py-3 sm:py-3.5 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-center text-sm sm:text-base"
+            >
+              <span className="block sm:inline">🏠</span>
+              <span className="block sm:inline sm:ml-1">Beranda</span>
+            </a>
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-3 sm:py-3.5 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl col-span-2 sm:col-span-1 text-sm sm:text-base"
+            >
+              <span className="block sm:inline">🚪</span>
+              <span className="block sm:inline sm:ml-1">Logout</span>
+            </button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="glass-effect rounded-2xl p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          <form onSubmit={handleSearch} className="flex gap-3">
+        <div className="glass-effect rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <div className="flex-1">
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="🔍 Cari berdasarkan nama, instansi, alamat, atau keperluan..."
-                className="w-full px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 sm:px-6 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
-            <button
-              type="submit"
-              className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
-            >
-              Cari
-            </button>
-            {search && (
+            <div className="flex gap-2 sm:gap-3">
               <button
-                type="button"
-                onClick={() => {
-                  setSearch('');
-                  setSearchInput('');
-                  setPagination({ ...pagination, page: 1 });
-                }}
-                className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
+                type="submit"
+                className="flex-1 sm:flex-none px-6 sm:px-8 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
               >
-                ✕ Reset
+                Cari
               </button>
-            )}
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('');
+                    setSearchInput('');
+                    setPagination({ ...pagination, page: 1 });
+                  }}
+                  className="flex-1 sm:flex-none px-4 sm:px-6 py-3 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
+                >
+                  ✕ Reset
+                </button>
+              )}
+            </div>
           </form>
           {search && (
-            <p className="mt-3 text-sm text-gray-600">
+            <p className="mt-3 text-xs sm:text-sm text-gray-600">
               Menampilkan hasil pencarian untuk: <span className="font-semibold">&quot;{search}&quot;</span> ({pagination.total} hasil)
             </p>
           )}
@@ -505,29 +513,33 @@ export default function AdminDashboard() {
                           {formatDate(item.createdAt)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <div className="flex gap-2 justify-center">
+                      <td className="px-3 sm:px-6 py-4 text-center">
+                        <div className="flex gap-1 sm:gap-2 justify-center flex-col sm:flex-row">
                           <button
                             onClick={() => handleOpenModal(item)}
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-md"
+                            className="px-3 sm:px-4 py-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
                           >
-                            ✏️ Edit
+                            <span className="inline sm:hidden">✏️</span>
+                            <span className="hidden sm:inline">✏️ Edit</span>
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
                             disabled={deleting === item.id}
-                            className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed"
+                            className="px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 disabled:bg-red-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
                           >
                             {deleting === item.id ? (
-                              <span className="flex items-center gap-2">
-                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <span className="flex items-center gap-2 justify-center">
+                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24">
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                ...
+                                <span className="hidden sm:inline">...</span>
                               </span>
                             ) : (
-                              '🗑️ Hapus'
+                              <>
+                                <span className="inline sm:hidden">🗑️</span>
+                                <span className="hidden sm:inline">🗑️ Hapus</span>
+                              </>
                             )}
                           </button>
                         </div>
@@ -540,24 +552,26 @@ export default function AdminDashboard() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <div className="text-sm text-gray-600">
+              <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                   Halaman {pagination.page} dari {pagination.totalPages} ({pagination.total} total data)
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2 flex-wrap justify-center">
                   <button
                     onClick={() => handlePageChange(1)}
                     disabled={pagination.page === 1}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
                   >
-                    ⏮️ First
+                    <span className="hidden sm:inline">⏮️ First</span>
+                    <span className="sm:hidden">⏮️</span>
                   </button>
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 1}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
                   >
-                    ◀️ Prev
+                    <span className="hidden sm:inline">◀️ Prev</span>
+                    <span className="sm:hidden">◀️</span>
                   </button>
                   
                   {/* Page Numbers */}
@@ -578,7 +592,7 @@ export default function AdminDashboard() {
                         <button
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
-                          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                          className={`px-2 sm:px-4 py-2 rounded-lg font-semibold transition-all text-xs sm:text-sm min-w-[2rem] sm:min-w-[2.5rem] ${
                             pagination.page === pageNum
                               ? 'bg-blue-500 text-white shadow-lg'
                               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -593,16 +607,18 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
                   >
-                    Next ▶️
+                    <span className="hidden sm:inline">Next ▶️</span>
+                    <span className="sm:hidden">▶️</span>
                   </button>
                   <button
                     onClick={() => handlePageChange(pagination.totalPages)}
                     disabled={pagination.page === pagination.totalPages}
-                    className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
                   >
-                    Last ⏭️
+                    <span className="hidden sm:inline">Last ⏭️</span>
+                    <span className="sm:hidden">⏭️</span>
                   </button>
                 </div>
               </div>
@@ -613,17 +629,17 @@ export default function AdminDashboard() {
 
       {/* Modal Form */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 rounded-t-2xl">
-              <h2 className="text-2xl font-bold">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-4 sm:p-6 rounded-t-2xl">
+              <h2 className="text-xl sm:text-2xl font-bold">
                 {editingId ? '✏️ Edit Data Tamu' : '➕ Tambah Data Tamu'}
               </h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                   Nama Lengkap *
                 </label>
                 <input
@@ -631,27 +647,27 @@ export default function AdminDashboard() {
                   required
                   value={formData.nama}
                   onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                   Alamat *
                 </label>
                 <textarea
                   required
                   value={formData.alamat}
                   onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="Masukkan alamat lengkap"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                   Instansi *
                 </label>
                 <input
@@ -659,51 +675,51 @@ export default function AdminDashboard() {
                   required
                   value={formData.instansi}
                   onChange={(e) => setFormData({ ...formData, instansi: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="Masukkan nama instansi"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                   Keperluan *
                 </label>
                 <textarea
                   required
                   value={formData.keperluan}
                   onChange={(e) => setFormData({ ...formData, keperluan: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="Masukkan keperluan kunjungan"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                   URL Foto (Opsional)
                 </label>
                 <input
                   type="url"
                   value={formData.fotoUrl}
                   onChange={(e) => setFormData({ ...formData, fotoUrl: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="https://example.com/foto.jpg"
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-4">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   {saving ? (
                     <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Menyimpan...
+                      <span className="hidden sm:inline">Menyimpan...</span>
                     </span>
                   ) : (
                     editingId ? '💾 Update Data' : '➕ Tambah Data'
@@ -713,7 +729,7 @@ export default function AdminDashboard() {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={saving}
-                  className="px-6 py-3 bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   ❌ Batal
                 </button>
