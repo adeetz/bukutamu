@@ -39,6 +39,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/settings');
       if (res.ok) {
         const data = await res.json();
+        console.log('Settings loaded:', data.data); // Debug
         setSettings(data.data);
         setFormData({
           organizationName: data.data.organizationName || '',
@@ -47,6 +48,7 @@ export default function SettingsPage() {
         });
       }
     } catch (error) {
+      console.error('Load settings error:', error);
       toast.error('Gagal memuat pengaturan');
     }
   }
@@ -171,19 +173,24 @@ export default function SettingsPage() {
               
               {/* Preview */}
               {formData.logoUrl && (
-                <div className="mb-4 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <div className="mb-4 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border-2 border-gray-300">
                   <div className="flex items-center justify-center">
-                    <div className="relative w-48 h-48">
+                    <div className="relative w-64 h-64 bg-white rounded-lg shadow-md p-4">
                       <Image
                         src={formData.logoUrl}
                         alt="Logo Preview"
                         fill
-                        className="object-contain"
+                        className="object-contain p-2"
                         unoptimized
+                        onError={(e) => {
+                          console.error('Image load error:', formData.logoUrl);
+                          toast.error('Gagal memuat preview logo');
+                        }}
                       />
                     </div>
                   </div>
-                  <p className="text-center text-sm text-gray-600 mt-2">Preview Logo</p>
+                  <p className="text-center text-sm text-gray-600 mt-4 font-medium">Preview Logo</p>
+                  <p className="text-center text-xs text-gray-500 mt-1 break-all px-4">{formData.logoUrl}</p>
                 </div>
               )}
 

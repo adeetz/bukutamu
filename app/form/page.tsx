@@ -249,14 +249,15 @@ export default function FormPage() {
           <div className="text-center mb-8">
             {/* Logo */}
             {settings?.logoUrl ? (
-              <div className="flex justify-center mb-4">
-                <div className="w-24 h-24 md:w-32 md:h-32 relative rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-100">
+              <div className="flex justify-center mb-6">
+                <div className="w-28 h-28 md:w-36 md:h-36 relative rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-200 p-4">
                   <Image
                     src={settings.logoUrl}
                     alt={settings.organizationName}
                     fill
-                    className="object-contain p-3"
+                    className="object-contain"
                     unoptimized
+                    priority
                   />
                 </div>
               </div>

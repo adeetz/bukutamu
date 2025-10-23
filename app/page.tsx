@@ -79,16 +79,17 @@ export default function Home() {
         <div className="glass-effect rounded-2xl p-8 md:p-10 mb-8 animate-fade-in">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-6 mb-4">
                 {/* Logo */}
                 {settings?.logoUrl ? (
-                  <div className="w-20 h-20 md:w-24 md:h-24 relative flex-shrink-0 rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-100">
+                  <div className="w-24 h-24 md:w-32 md:h-32 relative flex-shrink-0 rounded-2xl overflow-hidden bg-white shadow-lg border-2 border-blue-200 p-3">
                     <Image
                       src={settings.logoUrl}
                       alt={settings.organizationName}
                       fill
-                      className="object-contain p-2"
+                      className="object-contain"
                       unoptimized
+                      priority
                     />
                   </div>
                 ) : (
@@ -98,12 +99,12 @@ export default function Home() {
                 )}
                 
                 {/* Title */}
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-bold gradient-text leading-tight">
+                <div className="flex-1">
+                  <h1 className="text-3xl md:text-5xl font-bold gradient-text leading-tight">
                     Buku Tamu Digital
                   </h1>
                   {settings?.organizationName && (
-                    <p className="text-lg md:text-xl font-semibold text-gray-700 mt-1">
+                    <p className="text-base md:text-xl font-semibold text-gray-700 mt-2">
                       {settings.organizationName}
                     </p>
                   )}
