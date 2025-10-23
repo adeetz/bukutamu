@@ -6,11 +6,12 @@ import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting: maksimal 5 upload per menit per IP
+    // Rate limiting: maksimal 10 upload per menit per IP (increased for admin uploads)
     const clientIP = getClientIP(request);
-    const rateLimit = checkRateLimit(`upload:${clientIP}`, 5, 60 * 1000);
+    const rateLimit = checkRateLimit(`upload:${clientIP}`, 10, 60 * 1000);
     
     if (!rateLimit.allowed) {
+      logger.warn('Rate limit exceeded', { clientIP, retryAfter: rateLimit.retryAfter });
       return NextResponse.json(
         { error: `Terlalu banyak request. Coba lagi dalam ${rateLimit.retryAfter} detik` },
         { status: 429, headers: { 'Retry-After': rateLimit.retryAfter?.toString() || '60' } }
@@ -21,15 +22,19 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
 
     if (!file) {
+      logger.error('No file in request');
       return NextResponse.json(
         { error: 'File tidak ditemukan' },
         { status: 400 }
       );
     }
 
+    logger.debug('File received', { name: file.name, size: file.size, type: file.type });
+
     // Validasi file (tipe, ukuran, ekstensi)
     const validation = validateFile(file);
     if (!validation.valid) {
+      logger.error('File validation failed', { error: validation.error, file: file.name });
       return NextResponse.json(
         { error: validation.error },
         { status: 400 }

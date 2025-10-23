@@ -83,7 +83,9 @@ export default function SettingsPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Upload failed');
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Upload failed:', errorData);
+        throw new Error(errorData.error || 'Upload failed');
       }
 
       const data = await res.json();
