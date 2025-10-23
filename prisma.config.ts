@@ -8,7 +8,7 @@ export default defineConfig({
   },
   engine: "classic",
   datasource: {
-    
+    // DATABASE_URL will be provided by environment variables at runtime
     url: env("DATABASE_URL"),
   },
 });

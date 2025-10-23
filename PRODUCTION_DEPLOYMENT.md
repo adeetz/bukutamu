@@ -116,28 +116,32 @@ remotePatterns: [
 
 ### Option A: Deploy ke Vercel
 
+**PENTING:** Baca panduan lengkap di `VERCEL_DEPLOYMENT.md`
+
+**Quick Steps:**
+
 **1. Push ke GitHub:**
 ```bash
-# Add all files
 git add .
-
-# Commit
 git commit -m "Initial production setup"
-
-# Create GitHub repo dan push
 git remote add origin https://github.com/username/repo-name.git
 git branch -M main
 git push -u origin main
 ```
 
-**2. Import ke Vercel:**
-- Go to [vercel.com](https://vercel.com)
-- Click **New Project**
-- Import GitHub repository
-- Configure environment variables (copy from `.env.production.template`)
-- Click **Deploy**
+**2. Setup Environment Variables di Vercel:**
+⚠️ **HARUS dilakukan SEBELUM deploy!**
+- Go to [vercel.com](https://vercel.com) → New Project
+- Import repository
+- **Settings → Environment Variables**
+- Add semua variables dari `.env.production.template`
+- **JANGAN klik Deploy sebelum env vars ready!**
 
-**3. Post-deployment:**
+**3. Deploy:**
+- Click **Deploy**
+- Tunggu build selesai
+
+**4. Post-deployment:**
 ```bash
 # Run database migration
 vercel env pull
@@ -146,6 +150,8 @@ npx prisma migrate deploy
 # Create admin account
 npm run create-admin
 ```
+
+**Detailed Guide:** See `VERCEL_DEPLOYMENT.md`
 
 ### Option B: Deploy ke Netlify
 
