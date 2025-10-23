@@ -108,10 +108,12 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Welcome Text or Default */}
-              <p className="text-gray-600 text-lg mb-4 ml-1">
-                {settings?.welcomeText || 'Daftar pengunjung yang telah mengisi buku tamu'}
-              </p>
+              {/* Welcome Text */}
+              {settings?.welcomeText && (
+                <p className="text-gray-600 text-lg mb-4 ml-1">
+                  {settings.welcomeText}
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-3 ml-1">
                 <div className="px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                   <div className="flex items-center gap-2">
