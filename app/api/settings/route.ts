@@ -36,22 +36,29 @@ export async function GET() {
 // PUT - Update settings (admin only)
 export async function PUT(request: NextRequest) {
   try {
-    // Verify admin token
-    const token = request.cookies.get('admin_token')?.value;
+    // Verify admin token - check both session and admin_token cookies
+    const sessionToken = request.cookies.get('session')?.value;
+    const adminToken = request.cookies.get('admin_token')?.value;
+    const token = sessionToken || adminToken;
+    
     if (!token) {
+      console.error('[AUTH ERROR] No token found');
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
+        { success: false, message: 'Unauthorized - No token' },
         { status: 401 }
       );
     }
 
     const payload = await verifySession(token);
     if (!payload) {
+      console.error('[AUTH ERROR] Token verification failed');
       return NextResponse.json(
-        { success: false, message: 'Invalid token' },
+        { success: false, message: 'Unauthorized - Invalid token' },
         { status: 401 }
       );
     }
+
+    console.log('[AUTH SUCCESS] User:', payload.username);
 
     const body = await request.json();
     const { logoUrl, organizationName, welcomeText } = body;
