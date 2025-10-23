@@ -109,21 +109,27 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
+      console.log('Submitting settings:', formData); // Debug log
+      
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
+      const data = await res.json();
+      console.log('Response:', data); // Debug log
+
       if (!res.ok) {
-        throw new Error('Update failed');
+        throw new Error(data.message || 'Update failed');
       }
 
       toast.success('Pengaturan berhasil disimpan');
       loadSettings(); // Reload settings
 
-    } catch (error) {
-      toast.error('Gagal menyimpan pengaturan');
+    } catch (error: any) {
+      console.error('Save settings error:', error); // Debug log
+      toast.error(error.message || 'Gagal menyimpan pengaturan');
     } finally {
       setLoading(false);
     }
