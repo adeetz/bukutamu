@@ -37,7 +37,7 @@ export async function GET(
     const blob = await response.Body.transformToByteArray();
     const contentType = response.ContentType || 'image/jpeg';
 
-    return new NextResponse(blob, {
+    return new NextResponse(Buffer.from(blob), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',

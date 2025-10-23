@@ -11,6 +11,7 @@ export interface SessionPayload {
   userId: number;
   username: string;
   name: string;
+  [key: string]: any;
 }
 
 export async function createSession(payload: SessionPayload) {

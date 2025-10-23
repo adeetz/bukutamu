@@ -400,7 +400,7 @@ export default function FormPage() {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading || (RECAPTCHA_SITE_KEY && !recaptchaLoaded)}
+                disabled={loading || (!!RECAPTCHA_SITE_KEY && !recaptchaLoaded)}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 relative overflow-hidden"
               >
                 {loading ? (
