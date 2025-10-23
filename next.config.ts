@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -29,8 +28,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: true,
-  // Ensure Prisma Client is bundled (moved from experimental in Next.js 16)
-  serverExternalPackages: ['@prisma/client', 'prisma'],
+  // Ensure Prisma binaries are included in Vercel deployment
   outputFileTracingIncludes: {
     '/api/**/*': ['./node_modules/.prisma/client/**/*'],
   },
