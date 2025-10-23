@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -17,12 +10,12 @@ datasource db {
 model BukuTamu {
   id        Int      @id @default(autoincrement())
   nama      String   @db.VarChar(255)
-  alamat    String   @db.Text
+  alamat    String
   instansi  String   @db.VarChar(255)
-  keperluan String   @db.Text
+  keperluan String
   fotoUrl   String?  @db.VarChar(500)
   createdAt DateTime @default(now())
-  
+
   @@map("buku_tamu")
 }
 
@@ -32,6 +25,6 @@ model Admin {
   password  String   @db.VarChar(255)
   name      String   @db.VarChar(255)
   createdAt DateTime @default(now())
-  
+
   @@map("admin")
 }
