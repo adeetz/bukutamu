@@ -34,10 +34,10 @@ export async function GET(
       );
     }
 
-    const blob = await response.Body.transformToByteArray();
+    const bytes = await response.Body.transformToByteArray();
     const contentType = response.ContentType || 'image/jpeg';
 
-    return new NextResponse(Buffer.from(blob), {
+    return new NextResponse(new Uint8Array(bytes).buffer as ArrayBuffer, {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
