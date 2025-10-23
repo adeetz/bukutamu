@@ -34,10 +34,11 @@ export async function GET(
       );
     }
 
-    const bytes = await response.Body.transformToByteArray();
+    const stream = response.Body.transformToWebStream();
     const contentType = response.ContentType || 'image/jpeg';
 
-    return new NextResponse(new Uint8Array(bytes).buffer as ArrayBuffer, {
+    return new Response(stream, {
+      status: 200,
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
