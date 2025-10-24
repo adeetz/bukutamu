@@ -1,0 +1,53 @@
+# Robots.txt - Sistem Buku Tamu Digital (SIBUDI)
+# Aplikasi internal - tidak untuk diindeks search engine
+
+# Block all search engines and crawlers
+User-agent: *
+Disallow: /
+
+# Specifically block major search engines
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Googlebot-Image
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+# Block AI crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+# Block social media crawlers
+User-agent: facebookexternalhit
+Disallow: /
+
+User-agent: Twitterbot
+Disallow: /
+
+# No sitemap (internal application)
