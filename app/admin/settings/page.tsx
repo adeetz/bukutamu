@@ -13,6 +13,7 @@ export default function SettingsPage() {
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     organizationName: '',
+    pageTitle: '',
     welcomeText: '',
     logoUrl: ''
   });
@@ -42,6 +43,7 @@ export default function SettingsPage() {
         setSettings(data.data);
         setFormData({
           organizationName: data.data.organizationName || '',
+          pageTitle: data.data.pageTitle || '',
           welcomeText: data.data.welcomeText || '',
           logoUrl: data.data.logoUrl || ''
         });
@@ -223,10 +225,29 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            {/* Page Title */}
+            <div>
+              <label htmlFor="pageTitle" className="block text-sm font-medium text-gray-700 mb-2">
+                Judul Halaman
+              </label>
+              <input
+                id="pageTitle"
+                type="text"
+                value={formData.pageTitle}
+                onChange={(e) => setFormData(prev => ({ ...prev, pageTitle: e.target.value }))}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Diskominfo Kabupaten Tanah Bumbu"
+                required
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Judul ini akan ditampilkan di semua halaman aplikasi
+              </p>
+            </div>
+
             {/* Organization Name */}
             <div>
               <label htmlFor="orgName" className="block text-sm font-medium text-gray-700 mb-2">
-                Nama Organisasi
+                Nama Organisasi (Singkat)
               </label>
               <input
                 id="orgName"
@@ -237,6 +258,9 @@ export default function SettingsPage() {
                 placeholder="Diskominfo Tanah Bumbu"
                 required
               />
+              <p className="mt-1 text-sm text-gray-500">
+                Nama singkat untuk tampilan di header
+              </p>
             </div>
 
             {/* Welcome Text */}

@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface Settings {
   logoUrl: string | null;
   organizationName: string;
+  pageTitle: string;
   welcomeText: string | null;
 }
 
@@ -20,14 +22,20 @@ interface Guest {
 }
 
 export default function TVDisplayPage() {
+  const router = useRouter();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [countdown, setCountdown] = useState(10);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [formUrl, setFormUrl] = useState('');
 
-  // QR Code URL - form URL
-  const formUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/form` 
-    : 'https://yourdomain.com/form';
+  // Set form URL on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setFormUrl(`${window.location.origin}/form`);
+    }
+  }, []);
 
   // Fetch settings
   useEffect(() => {
@@ -73,6 +81,14 @@ export default function TVDisplayPage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev === 0 ? 10 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('id-ID', {
@@ -92,6 +108,16 @@ export default function TVDisplayPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
+      {/* Back Button - Fixed Position - Subtle */}
+      <button
+        onClick={() => router.push('/admin/dashboard')}
+        className="fixed top-4 right-4 z-40 px-3 py-2 bg-white/50 hover:bg-white text-gray-500 hover:text-gray-700 font-medium rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 flex items-center gap-2 backdrop-blur-sm opacity-40 hover:opacity-100"
+        title="Kembali ke Dashboard"
+      >
+        <span className="text-lg">←</span>
+        <span className="hidden sm:inline text-sm">Dashboard</span>
+      </button>
+
       {/* Header */}
       <div className="glass-effect rounded-2xl p-6 mb-6 animate-fade-in">
         <div className="flex items-center justify-between">
@@ -105,7 +131,7 @@ export default function TVDisplayPage() {
             )}
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-1">
-                {settings?.organizationName || 'Sistem Informasi Buku Tamu'}
+                {settings?.pageTitle || settings?.organizationName || 'Sistem Informasi Buku Tamu'}
               </h1>
               {settings?.welcomeText && (
                 <p className="text-gray-600">{settings.welcomeText}</p>
@@ -113,12 +139,8 @@ export default function TVDisplayPage() {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-gray-800">
-              {currentTime.toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-              })}
+            <div className="text-4xl font-bold text-gray-800">
+              {countdown}
             </div>
             <div className="text-sm text-gray-600">
               {currentTime.toLocaleDateString('id-ID', {
@@ -146,18 +168,22 @@ export default function TVDisplayPage() {
             </div>
             
             <div className="bg-white p-6 rounded-xl shadow-lg inline-block">
-              <QRCodeSVG
-                value={formUrl}
-                size={280}
-                level="H"
-                includeMargin={true}
-                imageSettings={{
-                  src: settings?.logoUrl || '',
-                  height: 40,
-                  width: 40,
-                  excavate: true,
-                }}
-              />
+              {formUrl && (
+                <QRCodeSVG
+                  value={formUrl}
+                  size={280}
+                  level="H"
+                  includeMargin={true}
+                  {...(settings?.logoUrl && {
+                    imageSettings: {
+                      src: settings.logoUrl,
+                      height: 40,
+                      width: 40,
+                      excavate: true,
+                    },
+                  })}
+                />
+              )}
             </div>
 
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
@@ -171,10 +197,20 @@ export default function TVDisplayPage() {
         {/* Guest List Section */}
         <div className="lg:col-span-2">
           <div className="glass-effect rounded-2xl p-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                ✅ Tamu Terdaftar Hari Ini
-              </h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                  ✅ Tamu Terdaftar Hari Ini
+                </h2>
+                <p className="text-sm text-gray-500">
+                  📅 {currentTime.toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span>Live Update</span>
@@ -206,7 +242,8 @@ export default function TVDisplayPage() {
                           <img
                             src={guest.fotoUrl}
                             alt={guest.nama}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-blue-100"
+                            className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 cursor-pointer hover:border-blue-300 transition-all"
+                            onClick={() => setSelectedPhoto(guest.fotoUrl)}
                           />
                         ) : (
                           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold">
@@ -258,10 +295,15 @@ export default function TVDisplayPage() {
 
             {guests.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">
-                    Total tamu hari ini: <span className="font-bold text-blue-600">{guests.length}</span>
-                  </span>
+                <div className="flex items-center justify-between text-sm flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">
+                      Total tamu hari ini: <span className="font-bold text-blue-600">{guests.length}</span>
+                    </span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                      📅 Hari Ini Saja
+                    </span>
+                  </div>
                   <span className="text-gray-400 text-xs">
                     Update otomatis setiap 10 detik
                   </span>
@@ -271,6 +313,29 @@ export default function TVDisplayPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal for Full Size Photo */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] animate-scale-in">
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold transition-colors"
+            >
+              ✕ Tutup
+            </button>
+            <img
+              src={selectedPhoto}
+              alt="Full size photo"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes slide-in {
@@ -283,8 +348,21 @@ export default function TVDisplayPage() {
             transform: translateX(0);
           }
         }
+        @keyframes scale-in {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
         .animate-slide-in {
           animation: slide-in 0.3s ease-out forwards;
+        }
+        .animate-scale-in {
+          animation: scale-in 0.3s ease-out forwards;
         }
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;

@@ -13,6 +13,7 @@ export async function GET() {
         data: {
           id: 1,
           organizationName: 'Diskominfo Tanah Bumbu',
+          pageTitle: 'Diskominfo Kabupaten Tanah Bumbu',
         }
       });
     }
@@ -52,19 +53,21 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { logoUrl, organizationName, welcomeText } = body;
+    const { logoUrl, organizationName, pageTitle, welcomeText } = body;
 
     const settings = await prisma.settings.upsert({
       where: { id: 1 },
       update: {
         ...(logoUrl !== undefined && { logoUrl }),
         ...(organizationName && { organizationName }),
+        ...(pageTitle && { pageTitle }),
         ...(welcomeText !== undefined && { welcomeText }),
       },
       create: {
         id: 1,
         logoUrl: logoUrl || null,
         organizationName: organizationName || 'Diskominfo Tanah Bumbu',
+        pageTitle: pageTitle || 'Diskominfo Kabupaten Tanah Bumbu',
         welcomeText: welcomeText || null,
       }
     });

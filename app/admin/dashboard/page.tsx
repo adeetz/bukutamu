@@ -62,6 +62,7 @@ export default function AdminDashboard() {
     totalPages: 0,
   });
   const [exporting, setExporting] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -482,7 +483,10 @@ export default function AdminDashboard() {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <div className="w-16 h-16 relative rounded-lg overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100">
+                        <div 
+                          className="w-16 h-16 relative rounded-lg overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 cursor-pointer hover:shadow-lg transition-all"
+                          onClick={() => item.fotoUrl && setSelectedPhoto(item.fotoUrl)}
+                        >
                           {item.fotoUrl ? (
                             <Image
                               src={item.fotoUrl}
@@ -743,6 +747,29 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Full Size Photo */}
+      {selectedPhoto && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <button
+              onClick={() => setSelectedPhoto(null)}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl font-bold transition-colors"
+            >
+              ✕ Tutup
+            </button>
+            <img
+              src={selectedPhoto}
+              alt="Full size photo"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}
