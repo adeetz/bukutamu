@@ -361,7 +361,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Action Buttons - Mobile Friendly Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             <button
               onClick={() => handleOpenModal()}
               className="w-full px-4 py-3 sm:py-3.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
@@ -376,6 +376,14 @@ export default function AdminDashboard() {
             >
               <span className="block sm:inline">{exporting ? '⏳' : '📥'}</span>
               <span className="block sm:inline sm:ml-1">{exporting ? 'Export...' : 'Export Excel'}</span>
+            </button>
+            <button
+              onClick={() => window.open('/display', '_blank')}
+              className="w-full px-4 py-3 sm:py-3.5 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
+              title="Buka tampilan TV/Monitor untuk tamu"
+            >
+              <span className="block sm:inline">📺</span>
+              <span className="block sm:inline sm:ml-1">Tampilan TV</span>
             </button>
             <button
               onClick={() => router.push('/admin/settings')}

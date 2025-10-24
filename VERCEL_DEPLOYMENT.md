@@ -46,12 +46,12 @@ Copy output (contoh: `ed12420a015af85ac065f4fdf31d8b8daa0af319...`)
    - Secret Access Key
    - Public URL (biasanya: `https://pub-xxxxx.r2.dev`)
 
-### Step 4: Setup reCAPTCHA (Optional)
+### Step 4: Setup hCaptcha (Optional)
 
-1. Go to [Google reCAPTCHA](https://www.google.com/recaptcha/admin/create)
+1. Go to [hCaptcha Dashboard](https://dashboard.hcaptcha.com/sites)
 2. Create site dengan:
-   - Type: **reCAPTCHA v3**
-   - Domains: `your-domain.vercel.app` (atau custom domain)
+   - Name: `Buku Tamu Production`
+   - Hostnames: `your-domain.vercel.app` (atau custom domain)
 3. Copy Site Key dan Secret Key
 
 ### Step 5: Push ke GitHub
@@ -93,8 +93,8 @@ R2_PUBLIC_DOMAIN=https://pub-xxxxx.r2.dev
 
 JWT_SECRET=your_generated_jwt_secret_here
 
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your_recaptcha_site_key
-RECAPTCHA_SECRET_KEY=your_recaptcha_secret_key
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=your_hcaptcha_site_key
+HCAPTCHA_SECRET_KEY=your_hcaptcha_secret_key
 
 NODE_ENV=production
 ```
@@ -219,13 +219,13 @@ npx prisma migrate deploy --schema=./prisma/schema.prisma
 2. Check R2 bucket settings → Public Access → **Allow Access**
 3. Test R2 URL di browser: `https://pub-xxxxx.r2.dev`
 
-### Error: "reCAPTCHA verification failed"
+### Error: "hCaptcha verification failed"
 
-**Penyebab:** Domain tidak terdaftar di reCAPTCHA
+**Penyebab:** Domain tidak terdaftar di hCaptcha
 
 **Solusi:**
-1. Go to [reCAPTCHA Admin](https://www.google.com/recaptcha/admin)
-2. Edit site → Add domain: `your-project.vercel.app`
+1. Go to [hCaptcha Dashboard](https://dashboard.hcaptcha.com/sites)
+2. Edit site → Add hostname: `your-project.vercel.app`
 3. Redeploy di Vercel
 
 ---
@@ -248,10 +248,10 @@ npx prisma migrate deploy --schema=./prisma/schema.prisma
    ```
 4. Wait for DNS propagation (5-60 menit)
 
-### Update reCAPTCHA Domain
+### Update hCaptcha Domain
 
-1. Go to reCAPTCHA Admin
-2. Edit site → Add: `yourdomain.com`
+1. Go to hCaptcha Dashboard
+2. Edit site → Add hostname: `yourdomain.com`
 
 ### Update Next.js Config (Optional)
 
@@ -277,7 +277,7 @@ Commit & push → Vercel auto-deploy.
 - [ ] Admin account created
 - [ ] Form submission works
 - [ ] Image upload works
-- [ ] reCAPTCHA works
+- [ ] hCaptcha works
 - [ ] Admin login works
 - [ ] CRUD operations work
 - [ ] Pagination works

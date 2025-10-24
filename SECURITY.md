@@ -76,18 +76,18 @@ Aplikasi Buku Tamu Digital telah dilengkapi dengan berbagai fitur keamanan untuk
 - Tidak ada raw SQL query
 - Parameterized queries untuk semua operasi database
 
-### 6. **reCAPTCHA v3 Protection** ✅ BARU!
+### 6. **hCaptcha Protection** ✅ BARU!
 
-**Lokasi:** `lib/recaptcha.ts` + Form Buku Tamu
+**Lokasi:** `lib/hcaptcha.ts` + Form Buku Tamu
 
 **Cara Kerja:**
-- Google reCAPTCHA v3 (invisible, tidak mengganggu user)
-- Score-based verification (0.0 - 1.0)
-- Threshold: 0.5 (di bawah ini ditolak sebagai bot)
-- Otomatis analisis perilaku user di background
+- hCaptcha widget dengan checkbox "I am human"
+- Privacy-focused CAPTCHA (tidak mengumpulkan data personal)
+- Challenge-based verification
+- Lebih user-friendly dan accessible
 
 **Setup:**
-Lihat panduan lengkap di: **`RECAPTCHA_SETUP.md`**
+Lihat panduan lengkap di: **`HCAPTCHA_SETUP.md`**
 
 ### 7. **Admin Login Protection** ✅ BARU!
 
@@ -147,15 +147,15 @@ Lihat panduan lengkap di: **`RECAPTCHA_SETUP.md`**
 ## 🚨 Yang Masih Perlu Dipertimbangkan
 
 ### 1. ~~CAPTCHA~~ ✅ SUDAH DIIMPLEMENTASIKAN!
-**Status:** ✅ **Aktif - Google reCAPTCHA v3**
+**Status:** ✅ **Aktif - hCaptcha**
 
 **Yang Sudah Diterapkan:**
-- ✅ Google reCAPTCHA v3 (invisible)
-- ✅ Score-based verification
-- ✅ Threshold 0.5 untuk bot detection
+- ✅ hCaptcha widget dengan checkbox
+- ✅ Privacy-focused verification
+- ✅ User-friendly challenge system
 - ✅ Integrated di form submission
 
-**Setup:** Lihat `RECAPTCHA_SETUP.md`
+**Setup:** Lihat `HCAPTCHA_SETUP.md`
 
 ### 2. HTTPS
 **Status:** Tergantung deployment

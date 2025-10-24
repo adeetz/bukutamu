@@ -6,9 +6,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
-import { loadRecaptchaScript, executeRecaptcha } from '@/lib/recaptcha';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '';
 
 interface Settings {
   logoUrl: string | null;
@@ -30,9 +30,10 @@ export default function FormPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hcaptchaRef = useRef<HCaptcha>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -114,18 +115,7 @@ export default function FormPage() {
     }
   };
 
-  // Load reCAPTCHA script
-  useEffect(() => {
-    if (RECAPTCHA_SITE_KEY) {
-      loadRecaptchaScript(RECAPTCHA_SITE_KEY)
-        .then(() => {
-          setRecaptchaLoaded(true);
-        })
-        .catch(() => {
-          // Fail silently, user will see error on submit
-        });
-    }
-  }, []);
+
 
   useEffect(() => {
     // Set video stream saat showCamera true dan stream tersedia
@@ -150,16 +140,11 @@ export default function FormPage() {
     setLoading(true);
 
     try {
-      // Generate reCAPTCHA token
-      let recaptchaToken = '';
-      if (RECAPTCHA_SITE_KEY && recaptchaLoaded) {
-        try {
-          recaptchaToken = await executeRecaptcha(RECAPTCHA_SITE_KEY, 'submit_form');
-        } catch (error) {
-          toast.error('Gagal memverifikasi CAPTCHA. Silakan refresh halaman dan coba lagi.');
-          setLoading(false);
-          return;
-        }
+      // Validasi hCaptcha token (hanya jika hCaptcha dikonfigurasi)
+      if (HCAPTCHA_SITE_KEY && HCAPTCHA_SITE_KEY.length > 0 && !hcaptchaToken) {
+        toast.error('Silakan selesaikan verifikasi CAPTCHA terlebih dahulu.');
+        setLoading(false);
+        return;
       }
 
       let fotoUrl = null;
@@ -190,7 +175,7 @@ export default function FormPage() {
         body: JSON.stringify({
           ...formData,
           fotoUrl,
-          recaptchaToken,
+          hcaptchaToken,
         }),
       });
 
@@ -209,12 +194,26 @@ export default function FormPage() {
       }
 
       toast.success('Data berhasil disimpan!');
+      
+      // Reset hCaptcha setelah berhasil
+      if (hcaptchaRef.current) {
+        hcaptchaRef.current.resetCaptcha();
+        setHcaptchaToken(null);
+      }
+      
+      // Redirect ke halaman sukses dengan nama tamu
       setTimeout(() => {
-        router.push('/');
+        router.push(`/form/success?nama=${encodeURIComponent(formData.nama)}`);
       }, 1000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan. Silakan coba lagi.';
       toast.error(errorMessage);
+      
+      // Reset hCaptcha saat error
+      if (hcaptchaRef.current) {
+        hcaptchaRef.current.resetCaptcha();
+        setHcaptchaToken(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -447,10 +446,26 @@ export default function FormPage() {
               )}
             </div>
 
+            {/* hCaptcha Widget */}
+            {HCAPTCHA_SITE_KEY && HCAPTCHA_SITE_KEY.length > 0 && (
+              <div className="flex justify-center pt-4">
+                <HCaptcha
+                  ref={hcaptchaRef}
+                  sitekey={HCAPTCHA_SITE_KEY}
+                  onVerify={(token) => setHcaptchaToken(token)}
+                  onExpire={() => setHcaptchaToken(null)}
+                  onError={(err) => {
+                    console.error('hCaptcha error:', err);
+                    setHcaptchaToken(null);
+                  }}
+                />
+              </div>
+            )}
+
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading || (!!RECAPTCHA_SITE_KEY && !recaptchaLoaded)}
+                disabled={loading || (!!HCAPTCHA_SITE_KEY && !hcaptchaToken)}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 relative overflow-hidden"
               >
                 {loading ? (
@@ -467,28 +482,6 @@ export default function FormPage() {
                   </span>
                 )}
               </button>
-
-              {/* reCAPTCHA Badge */}
-              {RECAPTCHA_SITE_KEY && (
-                <div className="mt-4 text-center">
-                  <p className="text-xs text-gray-500">
-                    Situs ini dilindungi oleh reCAPTCHA dan{' '}
-                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      Privacy Policy
-                    </a>{' '}
-                    serta{' '}
-                    <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                      Terms of Service
-                    </a>{' '}
-                    Google berlaku.
-                  </p>
-                  {!recaptchaLoaded && (
-                    <p className="text-xs text-orange-600 mt-1">
-                      ⏳ Memuat sistem keamanan...
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           </form>
         </div>

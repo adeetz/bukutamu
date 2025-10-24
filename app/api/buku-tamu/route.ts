@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { validateBukuTamuInput, checkRateLimit, getClientIP } from '@/lib/security';
-import { verifyRecaptcha } from '@/lib/recaptcha';
+import { verifyHcaptcha } from '@/lib/hcaptcha';
 import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
@@ -67,20 +67,20 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Verifikasi reCAPTCHA jika token tersedia
-    if (body.recaptchaToken) {
-      const recaptchaResult = await verifyRecaptcha(body.recaptchaToken);
+    // Verifikasi hCaptcha jika token tersedia
+    if (body.hcaptchaToken) {
+      const hcaptchaResult = await verifyHcaptcha(body.hcaptchaToken);
       
-      if (!recaptchaResult.success) {
+      if (!hcaptchaResult.success) {
         return NextResponse.json(
-          { error: recaptchaResult.error || 'Verifikasi CAPTCHA gagal' },
+          { error: hcaptchaResult.error || 'Verifikasi CAPTCHA gagal' },
           { status: 400 }
         );
       }
 
-      logger.info('reCAPTCHA verified', { score: recaptchaResult.score });
-    } else if (process.env.RECAPTCHA_SECRET_KEY) {
-      // Jika reCAPTCHA dikonfigurasi tapi token tidak ada, tolak request
+      logger.info('hCaptcha verified successfully');
+    } else if (process.env.HCAPTCHA_SECRET_KEY) {
+      // Jika hCaptcha dikonfigurasi tapi token tidak ada, tolak request
       return NextResponse.json(
         { error: 'Token CAPTCHA diperlukan' },
         { status: 400 }

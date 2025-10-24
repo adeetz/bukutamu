@@ -29,9 +29,9 @@ R2_PUBLIC_DOMAIN="https://your-production-domain.r2.dev"
 # JWT Secret - Use generated secret from command above
 JWT_SECRET="PASTE_GENERATED_SECRET_HERE"
 
-# Google reCAPTCHA v3
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY="your_production_site_key"
-RECAPTCHA_SECRET_KEY="your_production_secret_key"
+# hCaptcha
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY="your_production_site_key"
+HCAPTCHA_SECRET_KEY="your_production_secret_key"
 
 # Environment
 NODE_ENV="production"
@@ -74,13 +74,12 @@ npx prisma generate
    - Bucket Settings → Custom Domain
    - Add `photos.yourdomain.com`
 
-### 4. Google reCAPTCHA Setup
+### 4. hCaptcha Setup
 
-1. Go to [Google reCAPTCHA Admin](https://www.google.com/recaptcha/admin/create)
+1. Go to [hCaptcha Dashboard](https://dashboard.hcaptcha.com/sites)
 2. Create new site:
-   - Label: `Buku Tamu Production`
-   - reCAPTCHA type: **v3**
-   - Domains: Add production domain (`yourdomain.com`)
+   - Name: `Buku Tamu Production`
+   - Hostnames: Add production domain (`yourdomain.com`)
 3. Copy **Site Key** dan **Secret Key**
 4. Add to environment variables
 
@@ -210,7 +209,7 @@ pm2 startup
 - [ ] JWT_SECRET menggunakan random string yang kuat (64+ characters)
 - [ ] Database credentials tidak di-commit ke git
 - [ ] `.env` file ada di `.gitignore`
-- [ ] reCAPTCHA enabled untuk production
+- [ ] hCaptcha enabled untuk production
 - [ ] Rate limiting aktif (sudah built-in)
 - [ ] Account lockout enabled (sudah built-in)
 - [ ] HTTPS enabled di production domain
@@ -225,7 +224,7 @@ pm2 startup
 ### 1. Functionality Tests
 - [ ] Form submission works
 - [ ] Image upload works
-- [ ] reCAPTCHA works
+- [ ] hCaptcha works
 - [ ] Admin login works
 - [ ] CRUD operations work
 - [ ] Pagination works
@@ -304,10 +303,10 @@ npx prisma db push
 - Verify R2 bucket is set to Public
 - Check CORS settings in R2
 
-### Issue: reCAPTCHA Failed
-- Verify domain is added in reCAPTCHA console
-- Check NEXT_PUBLIC_RECAPTCHA_SITE_KEY is correct
-- Ensure using v3 keys, not v2
+### Issue: hCaptcha Failed
+- Verify domain is added in hCaptcha dashboard
+- Check NEXT_PUBLIC_HCAPTCHA_SITE_KEY is correct
+- Check HCAPTCHA_SECRET_KEY is correct
 
 ### Issue: Admin Can't Login
 ```bash

@@ -23,7 +23,7 @@ Aplikasi **Buku Tamu Digital** sudah siap untuk production deployment!
 - ✅ `app/api/buku-tamu/route.ts`
 - ✅ `app/api/upload/route.ts`
 - ✅ `lib/auth.ts`
-- ✅ `lib/recaptcha.ts`
+- ✅ `lib/hcaptcha.ts`
 - ✅ `app/form/page.tsx`
 - ✅ `app/page.tsx`
 - ✅ `app/admin/dashboard/page.tsx`
@@ -87,7 +87,7 @@ git push -u origin main
 1. **Setup Production Environment Variables**
    - Use `.env.production.template` as reference
    - Generate secure JWT_SECRET
-   - Configure database, R2, reCAPTCHA
+   - Configure database, R2, hCaptcha
 
 2. **Deploy to Vercel/Netlify**
    - Connect GitHub repo
@@ -113,7 +113,7 @@ git push -u origin main
 - ✅ Input sanitization (XSS protection)
 - ✅ Rate limiting (built-in)
 - ✅ Account lockout (built-in)
-- ✅ reCAPTCHA v3 integration
+- ✅ hCaptcha integration
 - ✅ Secure cookies (httpOnly, secure in production)
 - ✅ .env excluded from git
 - ✅ No hardcoded secrets
@@ -151,7 +151,7 @@ git push -u origin main
 1. `PRODUCTION_DEPLOYMENT.md` - Deployment guide
 2. `SETUP_GUIDE.md` - Local development
 3. `ADMIN_LOGIN_SECURITY.md` - Security features
-4. `RECAPTCHA_SETUP.md` - reCAPTCHA config
+4. `HCAPTCHA_SETUP.md` - hCaptcha config
 5. `SECURITY.md` - Security overview
 6. `.env.example` - Environment variables
 7. `.env.production.template` - Production template
