@@ -14,6 +14,7 @@ interface Guest {
   id: number;
   nama: string;
   instansi: string;
+  keperluan: string;
   fotoUrl: string | null;
   createdAt: string;
 }
@@ -134,7 +135,7 @@ export default function TVDisplayPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* QR Code Section */}
         <div className="lg:col-span-1">
-          <div className="glass-effect rounded-2xl p-8 text-center sticky top-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <div className="glass-effect rounded-2xl p-6 text-center animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="mb-4">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 📱 Scan untuk Daftar
@@ -160,25 +161,9 @@ export default function TVDisplayPage() {
             </div>
 
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-              <p className="text-xs text-gray-600 mb-1">Atau kunjungi:</p>
-              <p className="text-sm font-semibold text-blue-600 break-all">
-                {formUrl}
+              <p className="text-sm text-gray-700 font-medium text-center">
+                📱 Gunakan HP untuk scan QR Code
               </p>
-            </div>
-
-            <div className="mt-6 text-left space-y-2">
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-xl">1️⃣</span>
-                <span>Scan QR Code dengan smartphone</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-xl">2️⃣</span>
-                <span>Isi form buku tamu</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="text-xl">3️⃣</span>
-                <span>Ambil foto dan submit</span>
-              </div>
             </div>
           </div>
         </div>
@@ -242,20 +227,27 @@ export default function TVDisplayPage() {
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            🏢 {guest.instansi}
-                          </span>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              🏢 {guest.instansi}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              📋 {guest.keperluan}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Time */}
                       <div className="flex-shrink-0 text-right">
+                        <div className="text-sm font-semibold text-blue-600 mb-1">
+                          ⏰ {formatTime(guest.createdAt)}
+                        </div>
                         <div className="text-xs text-gray-500">
                           {formatDate(guest.createdAt)}
-                        </div>
-                        <div className="text-sm font-semibold text-blue-600">
-                          {formatTime(guest.createdAt)}
                         </div>
                       </div>
                     </div>
