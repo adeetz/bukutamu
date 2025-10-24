@@ -47,7 +47,7 @@ export default function Home() {
             )}
             <div className="space-y-3">
               <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest">
-                Sistem Informasi Digital
+                Sistem Informasi
               </p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
                 {settings?.pageTitle || 'Diskominfo Kabupaten Tanah Bumbu'}
