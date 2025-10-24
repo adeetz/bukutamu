@@ -3,17 +3,12 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-
-interface Settings {
-  logoUrl: string | null;
-  organizationName: string;
-  welcomeText: string | null;
-}
+import { useSettings } from '../../contexts/SettingsContext';
 
 function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const { settings } = useSettings();
   const [countdown, setCountdown] = useState(10);
   const [guestName, setGuestName] = useState<string>('');
 
@@ -23,20 +18,6 @@ function SuccessContent() {
     if (name) {
       setGuestName(decodeURIComponent(name));
     }
-
-    // Fetch settings
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/settings');
-        const result = await response.json();
-        if (result.success) {
-          setSettings(result.data);
-        }
-      } catch (error) {
-        // Silently fail
-      }
-    };
-    fetchSettings();
   }, [searchParams]);
 
   // Countdown timer

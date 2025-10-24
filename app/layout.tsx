@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import { SettingsProvider } from "./contexts/SettingsContext";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -22,8 +23,10 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${inter.variable} font-sans antialiased min-h-screen`}>
-        {children}
-        <Toaster 
+        <SettingsProvider>
+          {children}
+        </SettingsProvider>
+        <Toaster
           position="top-center"
           toastOptions={{
             duration: 3000,

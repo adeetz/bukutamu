@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
+import { useSettings } from '../../contexts/SettingsContext';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { settings: contextSettings, refetch } = useSettings();
   const [loading, setLoading] = useState(false);
-  const [settings, setSettings] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     organizationName: '',
@@ -21,8 +22,19 @@ export default function SettingsPage() {
   // Check authentication
   useEffect(() => {
     checkAuth();
-    loadSettings();
   }, []);
+
+  // Load settings from context
+  useEffect(() => {
+    if (contextSettings) {
+      setFormData({
+        organizationName: contextSettings.organizationName || '',
+        pageTitle: contextSettings.pageTitle || '',
+        welcomeText: contextSettings.welcomeText || '',
+        logoUrl: contextSettings.logoUrl || ''
+      });
+    }
+  }, [contextSettings]);
 
   async function checkAuth() {
     try {
@@ -35,23 +47,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function loadSettings() {
-    try {
-      const res = await fetch('/api/settings');
-      if (res.ok) {
-        const data = await res.json();
-        setSettings(data.data);
-        setFormData({
-          organizationName: data.data.organizationName || '',
-          pageTitle: data.data.pageTitle || '',
-          welcomeText: data.data.welcomeText || '',
-          logoUrl: data.data.logoUrl || ''
-        });
-      }
-    } catch (error) {
-      toast.error('Gagal memuat pengaturan');
-    }
-  }
 
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -114,7 +109,8 @@ export default function SettingsPage() {
       }
 
       toast.success('Pengaturan berhasil disimpan');
-      loadSettings();
+      // Refetch settings to update context
+      await refetch();
 
     } catch (error: any) {
       toast.error(error.message || 'Gagal menyimpan pengaturan');

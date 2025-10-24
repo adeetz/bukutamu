@@ -1,36 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSettings } from './contexts/SettingsContext';
 import './electro-animation.css';
 
-interface Settings {
-  logoUrl: string | null;
-  organizationName: string;
-  pageTitle: string;
-  welcomeText: string | null;
-}
-
 export default function Home() {
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [settingsLoading, setSettingsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch('/api/settings');
-      const result = await response.json();
-      if (result.success) {
-        setSettings(result.data);
-      }
-    } catch (error) {
-      
-    } finally {
-      setSettingsLoading(false);
-    }
-  };
+  const { settings, loading: settingsLoading } = useSettings();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">

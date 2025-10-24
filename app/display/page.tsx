@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-
-interface Settings {
-  logoUrl: string | null;
-  organizationName: string;
-  pageTitle: string;
-  welcomeText: string | null;
-}
+import { useSettings } from '../contexts/SettingsContext';
 
 interface Guest {
   id: number;
@@ -23,7 +17,7 @@ interface Guest {
 
 export default function TVDisplayPage() {
   const router = useRouter();
-  const [settings, setSettings] = useState<Settings | null>(null);
+  const { settings } = useSettings();
   const [guests, setGuests] = useState<Guest[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [countdown, setCountdown] = useState(10);
@@ -35,22 +29,6 @@ export default function TVDisplayPage() {
     if (typeof window !== 'undefined') {
       setFormUrl(`${window.location.origin}/form`);
     }
-  }, []);
-
-  // Fetch settings
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await fetch('/api/settings');
-        const result = await response.json();
-        if (result.success) {
-          setSettings(result.data);
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      }
-    };
-    fetchSettings();
   }, []);
 
   // Fetch latest guests

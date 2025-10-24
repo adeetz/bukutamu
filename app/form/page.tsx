@@ -7,19 +7,14 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
+import { useSettings } from '../contexts/SettingsContext';
 
 const HCAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || '';
 
-interface Settings {
-  logoUrl: string | null;
-  organizationName: string;
-  welcomeText: string | null;
-}
-
 export default function FormPage() {
   const router = useRouter();
+  const { settings } = useSettings();
   const [loading, setLoading] = useState(false);
-  const [settings, setSettings] = useState<Settings | null>(null);
   const [formData, setFormData] = useState({
     nama: '',
     alamat: '',
@@ -34,22 +29,6 @@ export default function FormPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hcaptchaRef = useRef<HCaptcha>(null);
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    try {
-      const response = await fetch('/api/settings');
-      const result = await response.json();
-      if (result.success) {
-        setSettings(result.data);
-      }
-    } catch (error) {
-      // Silently fail
-    }
-  };
 
   const startCamera = async () => {
     try {
