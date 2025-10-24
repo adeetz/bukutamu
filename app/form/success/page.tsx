@@ -10,7 +10,7 @@ interface Settings {
   welcomeText: string | null;
 }
 
-export default function SuccessPage() {
+function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -182,5 +182,13 @@ export default function SuccessPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <>
+      <SuccessContent />
+    </>
   );
 }
