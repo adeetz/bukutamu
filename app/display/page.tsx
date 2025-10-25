@@ -89,6 +89,23 @@ export default function TVDisplayPage() {
     });
   };
 
+  const getDateLabel = (dateStr: string) => {
+    const selected = new Date(dateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selected.setHours(0, 0, 0, 0);
+    
+    const diffTime = today.getTime() - selected.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return '📅 Hari Ini';
+    if (diffDays === 1) return '⏮️ Kemarin';
+    if (diffDays <= 7) return `📆 ${diffDays} Hari Lalu`;
+    if (diffDays <= 30) return `📆 ${Math.floor(diffDays / 7)} Minggu Lalu`;
+    if (diffDays <= 365) return `📆 ${Math.floor(diffDays / 30)} Bulan Lalu`;
+    return `📆 ${new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6 relative">
       {/* Sasirangan Background Pattern */}
@@ -159,11 +176,7 @@ export default function TVDisplayPage() {
                 onClick={() => setShowDatePicker(!showDatePicker)}
                 className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm font-medium text-gray-700 shadow-sm"
               >
-                📅 {new Date(selectedDate).toLocaleDateString('id-ID', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
+                {getDateLabel(selectedDate)}
               </button>
               {showDatePicker && (
                 <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 min-w-[200px]">
@@ -253,15 +266,7 @@ export default function TVDisplayPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-1">
-                  ✅ Tamu Terdaftar {
-                    selectedDate === new Date().toISOString().split('T')[0] 
-                      ? 'Hari Ini' 
-                      : new Date(selectedDate).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                  }
+                  ✅ Tamu Terdaftar {getDateLabel(selectedDate).replace(/📅|⏮️|📆/g, '').trim()}
                 </h2>
                 <p className="text-sm text-gray-500">
                   📅 {new Date(selectedDate).toLocaleDateString('id-ID', {
@@ -369,10 +374,7 @@ export default function TVDisplayPage() {
                       Total tamu: <span className="font-bold text-blue-600">{guests.length}</span>
                     </span>
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                      📅 {selectedDate === new Date().toISOString().split('T')[0] ? 'Hari Ini' : new Date(selectedDate).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
+                      {getDateLabel(selectedDate)}
                     </span>
                   </div>
                   <span className="text-gray-400 text-xs">
