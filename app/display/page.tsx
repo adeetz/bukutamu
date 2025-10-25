@@ -172,18 +172,12 @@ export default function TVDisplayPage() {
                 </div>
               )}
             </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold text-gray-800">
+            <div className="text-center">
+              <div className="text-sm text-gray-500 mb-1">Refresh dalam</div>
+              <div className="text-5xl font-bold text-blue-600">
                 {countdown}
               </div>
-              <div className="text-sm text-gray-600">
-                {currentTime.toLocaleDateString('id-ID', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </div>
+              <div className="text-xs text-gray-400 mt-1">detik</div>
             </div>
           </div>
         </div>
