@@ -134,21 +134,21 @@ export default function TVDisplayPage() {
             <div className="px-5 py-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg">
               <div className="text-center">
                 <div className="text-3xl font-bold text-white tabular-nums">
-                  {currentTime.toLocaleTimeString('id-ID', {
+                  {new Intl.DateTimeFormat('id-ID', {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: false,
                     timeZone: 'Asia/Makassar',
-                  })}
+                  }).format(currentTime)}
                 </div>
                 <div className="text-xs text-blue-100 mt-0.5 font-medium">
-                  {currentTime.toLocaleDateString('id-ID', {
+                  {new Intl.DateTimeFormat('id-ID', {
                     weekday: 'short',
                     day: 'numeric',
                     month: 'short',
                     timeZone: 'Asia/Makassar',
-                  })} WITA
+                  }).format(currentTime)} WITA
                 </div>
               </div>
             </div>
