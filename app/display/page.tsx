@@ -280,25 +280,25 @@ export default function TVDisplayPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 custom-scrollbar">
                 {guests.map((guest, index) => (
                   <div
                     key={guest.id}
-                    className="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300 animate-slide-in"
+                    className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-in border-2 border-gray-100"
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
                       {/* Foto */}
                       <div className="flex-shrink-0">
                         {guest.fotoUrl ? (
                           <img
                             src={guest.fotoUrl}
                             alt={guest.nama}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 cursor-pointer hover:border-blue-300 transition-all"
+                            className="w-24 h-24 rounded-2xl object-cover border-4 border-blue-100 cursor-pointer hover:border-blue-400 transition-all shadow-md"
                             onClick={() => setSelectedPhoto(guest.fotoUrl)}
                           />
                         ) : (
-                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-2xl font-bold">
+                          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-4xl font-bold shadow-md">
                             {guest.nama.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -306,36 +306,36 @@ export default function TVDisplayPage() {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-gray-800 text-lg truncate">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="font-bold text-gray-900 text-2xl truncate">
                             {guest.nama}
                           </h3>
                           {index === 0 && (
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                              Baru
+                            <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-full flex items-center gap-1">
+                              ✨ Baru
                             </span>
                           )}
                         </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              🏢 {guest.instansi}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-base text-gray-700">
+                            <span className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+                              🏢 <span className="font-medium">{guest.instansi}</span>
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              📋 {guest.keperluan}
+                          <div className="flex items-center gap-2 text-base text-gray-700">
+                            <span className="flex items-center gap-2 bg-purple-50 px-3 py-1.5 rounded-lg">
+                              📋 <span className="font-medium">{guest.keperluan}</span>
                             </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Time */}
-                      <div className="flex-shrink-0 text-right">
-                        <div className="text-sm font-semibold text-blue-600 mb-1">
+                      <div className="flex-shrink-0 text-right bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-3 rounded-xl">
+                        <div className="text-base font-bold text-blue-600 mb-1">
                           ⏰ {formatTime(guest.createdAt)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm text-gray-600 font-medium">
                           {formatDate(guest.createdAt)}
                         </div>
                       </div>
