@@ -25,7 +25,11 @@ export default function TVDisplayPage() {
   const [formUrl, setFormUrl] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    // Gunakan tanggal lokal, bukan UTC
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isScrollPaused, setIsScrollPaused] = useState(false);
@@ -234,7 +238,13 @@ export default function TVDisplayPage() {
                   <input
                     type="date"
                     value={selectedDate}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={(() => {
+                      const today = new Date();
+                      const year = today.getFullYear();
+                      const month = String(today.getMonth() + 1).padStart(2, '0');
+                      const day = String(today.getDate()).padStart(2, '0');
+                      return `${year}-${month}-${day}`;
+                    })()}
                     onChange={(e) => {
                       setSelectedDate(e.target.value);
                       setShowDatePicker(false);
@@ -245,7 +255,10 @@ export default function TVDisplayPage() {
                     <button
                       onClick={() => {
                         const today = new Date();
-                        setSelectedDate(today.toISOString().split('T')[0]);
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const day = String(today.getDate()).padStart(2, '0');
+                        setSelectedDate(`${year}-${month}-${day}`);
                         setShowDatePicker(false);
                       }}
                       className="w-full text-left px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
@@ -256,7 +269,10 @@ export default function TVDisplayPage() {
                       onClick={() => {
                         const yesterday = new Date();
                         yesterday.setDate(yesterday.getDate() - 1);
-                        setSelectedDate(yesterday.toISOString().split('T')[0]);
+                        const year = yesterday.getFullYear();
+                        const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+                        const day = String(yesterday.getDate()).padStart(2, '0');
+                        setSelectedDate(`${year}-${month}-${day}`);
                         setShowDatePicker(false);
                       }}
                       className="w-full text-left px-2 py-1 text-sm text-gray-600 hover:bg-gray-50 rounded"
@@ -320,7 +336,7 @@ export default function TVDisplayPage() {
                   ✅ Tamu Terdaftar {getDateLabel(selectedDate).replace(/📅|⏮️|📆/g, '').trim()}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  📅 {new Date(selectedDate).toLocaleDateString('id-ID', {
+                  📅 {new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
@@ -341,9 +357,16 @@ export default function TVDisplayPage() {
                   Belum ada tamu yang terdaftar
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
-                  {selectedDate === new Date().toISOString().split('T')[0] 
+                  {(() => {
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    const todayStr = `${year}-${month}-${day}`;
+                    return selectedDate === todayStr;
+                  })() 
                     ? 'Scan QR Code untuk menjadi tamu pertama!' 
-                    : `Tidak ada data tamu pada tanggal ${new Date(selectedDate).toLocaleDateString('id-ID', {
+                    : `Tidak ada data tamu pada tanggal ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
