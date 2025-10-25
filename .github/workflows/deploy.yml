@@ -1,0 +1,41 @@
+# Nama workflow
+name: Deploy to VPS
+
+# Kapan workflow ini dijalankan
+on:
+  # Jalankan hanya saat ada 'push' ke branch 'main'
+  push:
+    branches:
+      - main 
+      # Ganti 'main' jika nama branch Anda 'master'
+
+jobs:
+  deploy:
+    # Jalankan di server virtual Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Mengambil kode dari repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Login ke VPS dan menjalankan perintah deployment
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22 # Ganti jika Anda mengubah port SSH
+          script: |
+            # Masuk ke folder proyek
+            cd /home/adit/nextjs/sistembukutamudigital
+
+            # Ambil kode terbaru
+            git pull
+
+            # Bangun ulang kontainer
+            docker-compose up -d --build
+
+            # (Opsional) Hapus image lama yang tidak terpakai
+            docker image prune -f
