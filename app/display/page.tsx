@@ -286,14 +286,14 @@ export default function TVDisplayPage() {
               {formUrl && (
                 <QRCodeSVG
                   value={formUrl}
-                  size={280}
+                  size={320}
                   level="H"
                   includeMargin={true}
                   {...(settings?.logoUrl && {
                     imageSettings: {
                       src: settings.logoUrl,
-                      height: 40,
-                      width: 40,
+                      height: 56,
+                      width: 56,
                       excavate: true,
                     },
                   })}
