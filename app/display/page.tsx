@@ -23,6 +23,11 @@ export default function TVDisplayPage() {
   const [countdown, setCountdown] = useState(10);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [formUrl, setFormUrl] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Set form URL on client side only
   useEffect(() => {
@@ -35,7 +40,7 @@ export default function TVDisplayPage() {
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        const response = await fetch('/api/buku-tamu?limit=10&page=1');
+        const response = await fetch(`/api/buku-tamu?limit=100&page=1&date=${selectedDate}`);
         const result = await response.json();
         if (result.data) {
           setGuests(result.data);
@@ -49,7 +54,7 @@ export default function TVDisplayPage() {
     // Auto refresh setiap 10 detik
     const interval = setInterval(fetchGuests, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedDate]);
 
   // Update clock setiap detik
   useEffect(() => {
@@ -98,7 +103,7 @@ export default function TVDisplayPage() {
 
       {/* Header */}
       <div className="glass-effect rounded-2xl p-6 mb-6 animate-fade-in">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-6">
             {settings?.logoUrl && (
               <img
@@ -116,17 +121,69 @@ export default function TVDisplayPage() {
               )}
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-4xl font-bold text-gray-800">
-              {countdown}
+          <div className="flex items-center gap-4">
+            {/* Date Picker */}
+            <div className="relative">
+              <button
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm font-medium text-gray-700 shadow-sm"
+              >
+                📅 {new Date(selectedDate).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </button>
+              {showDatePicker && (
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 min-w-[200px]">
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      setSelectedDate(e.target.value);
+                      setShowDatePicker(false);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                  <div className="mt-2 pt-2 border-t border-gray-200 space-y-1">
+                    <button
+                      onClick={() => {
+                        const today = new Date();
+                        setSelectedDate(today.toISOString().split('T')[0]);
+                        setShowDatePicker(false);
+                      }}
+                      className="w-full text-left px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+                    >
+                      📅 Hari Ini
+                    </button>
+                    <button
+                      onClick={() => {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        setSelectedDate(yesterday.toISOString().split('T')[0]);
+                        setShowDatePicker(false);
+                      }}
+                      className="w-full text-left px-2 py-1 text-sm text-gray-600 hover:bg-gray-50 rounded"
+                    >
+                      ⏮️ Kemarin
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="text-sm text-gray-600">
-              {currentTime.toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-              })}
+            <div className="text-right">
+              <div className="text-4xl font-bold text-gray-800">
+                {countdown}
+              </div>
+              <div className="text-sm text-gray-600">
+                {currentTime.toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -178,10 +235,18 @@ export default function TVDisplayPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-1">
-                  ✅ Tamu Terdaftar Hari Ini
+                  ✅ Tamu Terdaftar {
+                    selectedDate === new Date().toISOString().split('T')[0] 
+                      ? 'Hari Ini' 
+                      : new Date(selectedDate).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                  }
                 </h2>
                 <p className="text-sm text-gray-500">
-                  📅 {currentTime.toLocaleDateString('id-ID', {
+                  📅 {new Date(selectedDate).toLocaleDateString('id-ID', {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long',
@@ -202,7 +267,14 @@ export default function TVDisplayPage() {
                   Belum ada tamu yang terdaftar
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
-                  Scan QR Code untuk menjadi tamu pertama!
+                  {selectedDate === new Date().toISOString().split('T')[0] 
+                    ? 'Scan QR Code untuk menjadi tamu pertama!' 
+                    : `Tidak ada data tamu pada tanggal ${new Date(selectedDate).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}`
+                  }
                 </p>
               </div>
             ) : (
@@ -276,10 +348,13 @@ export default function TVDisplayPage() {
                 <div className="flex items-center justify-between text-sm flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <span className="text-gray-600">
-                      Total tamu hari ini: <span className="font-bold text-blue-600">{guests.length}</span>
+                      Total tamu: <span className="font-bold text-blue-600">{guests.length}</span>
                     </span>
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                      📅 Hari Ini Saja
+                      📅 {selectedDate === new Date().toISOString().split('T')[0] ? 'Hari Ini' : new Date(selectedDate).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
                     </span>
                   </div>
                   <span className="text-gray-400 text-xs">

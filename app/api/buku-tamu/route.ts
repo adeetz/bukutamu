@@ -10,18 +10,35 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
+    const dateFilter = searchParams.get('date') || '';
     
     const skip = (page - 1) * limit;
 
-    // Build where clause untuk search
-    const where = search ? {
-      OR: [
+    // Build where clause
+    const where: any = {};
+    
+    // Search filter
+    if (search) {
+      where.OR = [
         { nama: { contains: search } },
         { instansi: { contains: search } },
         { alamat: { contains: search } },
         { keperluan: { contains: search } },
-      ],
-    } : {};
+      ];
+    }
+
+    // Date filter (filter by specific date)
+    if (dateFilter) {
+      const targetDate = new Date(dateFilter);
+      targetDate.setHours(0, 0, 0, 0);
+      const nextDay = new Date(targetDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      where.createdAt = {
+        gte: targetDate,
+        lt: nextDay,
+      };
+    }
 
     // Get total count untuk pagination
     const total = await prisma.bukuTamu.count({ where });
