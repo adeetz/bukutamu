@@ -276,6 +276,7 @@ export default function AdminDashboard() {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: undefined, // Gunakan timezone browser
     });
   };
 

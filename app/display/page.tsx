@@ -127,6 +127,7 @@ export default function TVDisplayPage() {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
+      timeZone: undefined, // Gunakan timezone browser
     });
   };
 
@@ -135,6 +136,7 @@ export default function TVDisplayPage() {
     return date.toLocaleTimeString('id-ID', {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: undefined, // Gunakan timezone browser
     });
   };
 
@@ -205,7 +207,6 @@ export default function TVDisplayPage() {
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: false,
-                    timeZone: 'Asia/Makassar',
                   }).format(currentTime)}
                 </div>
                 <div className="text-xs text-blue-100 mt-0.5 font-medium">
@@ -213,8 +214,7 @@ export default function TVDisplayPage() {
                     weekday: 'short',
                     day: 'numeric',
                     month: 'short',
-                    timeZone: 'Asia/Makassar',
-                  }).format(currentTime)} WITA
+                  }).format(currentTime)}
                 </div>
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function TVDisplayPage() {
                           <img
                             src={guest.fotoUrl}
                             alt={guest.nama}
-                            className="w-24 h-24 rounded-2xl object-cover border-4 border-blue-100 cursor-pointer hover:border-blue-400 transition-all shadow-md"
+                            className="w-24 h-24 rounded-2xl object-cover cursor-pointer hover:scale-105 transition-all shadow-md"
                             onClick={() => setSelectedPhoto(guest.fotoUrl)}
                           />
                         ) : (
