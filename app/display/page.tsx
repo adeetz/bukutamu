@@ -138,6 +138,7 @@ export default function TVDisplayPage() {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
+                    timeZone: 'Asia/Makassar',
                   })}
                 </div>
                 <div className="text-xs text-blue-100 mt-0.5 font-medium">
@@ -145,7 +146,8 @@ export default function TVDisplayPage() {
                     weekday: 'short',
                     day: 'numeric',
                     month: 'short',
-                  })}
+                    timeZone: 'Asia/Makassar',
+                  })} WITA
                 </div>
               </div>
             </div>
