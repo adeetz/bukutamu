@@ -106,8 +106,8 @@ export default function TVDisplayPage() {
             }, 1000);
           }, 2000);
         } else if (!isResettingRef.current) {
-          // Scroll perlahan ke bawah
-          container.scrollBy({ top: 1, behavior: 'auto' });
+          // Scroll perlahan ke bawah (tanpa behavior untuk smooth)
+          container.scrollTop += 1;
         }
       }, 60); // Scroll lebih lambat: 1px per 60ms
     };
@@ -352,7 +352,7 @@ export default function TVDisplayPage() {
             ) : (
               <div 
                 ref={scrollContainerRef}
-                className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 auto-scroll-container"
+                className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 auto-scroll-container smooth-scroll"
                 onMouseEnter={() => setIsScrollPaused(true)}
                 onMouseLeave={() => setIsScrollPaused(false)}
               >
@@ -504,6 +504,11 @@ export default function TVDisplayPage() {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #94a3b8;
+        }
+        
+        /* Smooth scroll behavior */
+        .smooth-scroll {
+          scroll-behavior: auto;
         }
         
         /* Auto-scroll container - hide scrollbar by default, show on hover */
