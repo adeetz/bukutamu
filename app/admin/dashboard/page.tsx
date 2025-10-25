@@ -133,13 +133,18 @@ export default function AdminDashboard() {
         Alamat: item.alamat,
         Instansi: item.instansi,
         Keperluan: item.keperluan,
-        'Tanggal Kunjungan': new Date(item.createdAt).toLocaleDateString('id-ID', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+        'Tanggal Kunjungan': (() => {
+          const isoString = item.createdAt.includes('Z') || item.createdAt.includes('+') ? item.createdAt : item.createdAt + 'Z';
+          const date = new Date(isoString);
+          return date.toLocaleString('id-ID', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          });
+        })(),
       }));
 
       // Create workbook dan worksheet
@@ -270,13 +275,16 @@ export default function AdminDashboard() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
+    // Pastikan date di-parse dengan benar sebagai UTC
+    const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
+    const date = new Date(isoString);
+    return date.toLocaleString('id-ID', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: undefined, // Gunakan timezone browser
+      hour12: false,
     });
   };
 

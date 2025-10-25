@@ -128,21 +128,26 @@ export default function TVDisplayPage() {
   }, [guests, isScrollPaused]);
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // Pastikan date di-parse dengan benar
+    // Jika string tidak punya timezone info, tambahkan 'Z' untuk UTC
+    const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
+    const date = new Date(isoString);
     return date.toLocaleDateString('id-ID', {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
-      timeZone: undefined, // Gunakan timezone browser
     });
   };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
+    // Pastikan date di-parse dengan benar sebagai UTC
+    // Jika string tidak punya timezone info, tambahkan 'Z' untuk UTC
+    const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
+    const date = new Date(isoString);
     return date.toLocaleTimeString('id-ID', {
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: undefined, // Gunakan timezone browser
+      hour12: false,
     });
   };
 
