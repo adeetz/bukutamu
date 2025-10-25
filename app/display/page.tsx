@@ -301,11 +301,7 @@ export default function TVDisplayPage() {
               )}
             </div>
 
-            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-              <p className="text-sm text-gray-700 font-medium text-center">
-                📱 Gunakan HP untuk scan QR Code
-              </p>
-            </div>
+
           </div>
         </div>
 

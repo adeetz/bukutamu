@@ -35,7 +35,7 @@ jobs:
             git pull
 
             # Bangun ulang kontainer
-            docker-compose up -d --build
+            docker compose up -d --build
 
             # (Opsional) Hapus image lama yang tidak terpakai
             docker image prune -f
