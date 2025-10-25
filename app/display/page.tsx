@@ -130,6 +130,26 @@ export default function TVDisplayPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* Real-time Clock */}
+            <div className="px-5 py-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white tabular-nums">
+                  {currentTime.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
+                </div>
+                <div className="text-xs text-blue-100 mt-0.5 font-medium">
+                  {currentTime.toLocaleDateString('id-ID', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* Date Picker */}
             <div className="relative">
               <button
