@@ -109,7 +109,7 @@ export default function TVDisplayPage() {
           // Scroll perlahan ke bawah
           container.scrollBy({ top: 1, behavior: 'auto' });
         }
-      }, 30);
+      }, 60); // Scroll lebih lambat: 1px per 60ms
     };
 
     startScroll();
