@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -28,6 +28,8 @@ export default function TVDisplayPage() {
     return today.toISOString().split('T')[0];
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isScrollPaused, setIsScrollPaused] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Set form URL on client side only
   useEffect(() => {
@@ -71,6 +73,32 @@ export default function TVDisplayPage() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-scroll untuk daftar tamu
+  useEffect(() => {
+    if (!scrollContainerRef.current || isScrollPaused || guests.length === 0) return;
+
+    const container = scrollContainerRef.current;
+    let scrollInterval: NodeJS.Timeout;
+
+    const startScroll = () => {
+      scrollInterval = setInterval(() => {
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 10) {
+          // Kembali ke atas dengan smooth
+          container.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          // Scroll perlahan ke bawah
+          container.scrollBy({ top: 1, behavior: 'smooth' });
+        }
+      }, 50); // Kecepatan scroll (semakin kecil semakin cepat)
+    };
+
+    startScroll();
+
+    return () => {
+      if (scrollInterval) clearInterval(scrollInterval);
+    };
+  }, [guests, isScrollPaused]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -301,7 +329,12 @@ export default function TVDisplayPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 custom-scrollbar">
+              <div 
+                ref={scrollContainerRef}
+                className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 custom-scrollbar"
+                onMouseEnter={() => setIsScrollPaused(true)}
+                onMouseLeave={() => setIsScrollPaused(false)}
+              >
                 {guests.map((guest, index) => (
                   <div
                     key={guest.id}
