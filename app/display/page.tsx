@@ -83,14 +83,18 @@ export default function TVDisplayPage() {
 
     const startScroll = () => {
       scrollInterval = setInterval(() => {
-        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 10) {
-          // Kembali ke atas dengan smooth
-          container.scrollTo({ top: 0, behavior: 'smooth' });
+        const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 5;
+        
+        if (isAtBottom) {
+          // Tunggu sebentar di bawah, lalu kembali ke atas
+          setTimeout(() => {
+            container.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 2000); // Pause 2 detik di bawah sebelum kembali ke atas
         } else {
           // Scroll perlahan ke bawah
-          container.scrollBy({ top: 1, behavior: 'smooth' });
+          container.scrollBy({ top: 1, behavior: 'auto' });
         }
-      }, 50); // Kecepatan scroll (semakin kecil semakin cepat)
+      }, 30); // Kecepatan scroll (semakin kecil semakin cepat)
     };
 
     startScroll();
@@ -331,7 +335,7 @@ export default function TVDisplayPage() {
             ) : (
               <div 
                 ref={scrollContainerRef}
-                className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 custom-scrollbar"
+                className="space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto pr-2 auto-scroll-container"
                 onMouseEnter={() => setIsScrollPaused(true)}
                 onMouseLeave={() => setIsScrollPaused(false)}
               >
@@ -482,6 +486,34 @@ export default function TVDisplayPage() {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        
+        /* Auto-scroll container - hide scrollbar by default, show on hover */
+        .auto-scroll-container {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        .auto-scroll-container::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+        }
+        .auto-scroll-container:hover {
+          scrollbar-width: thin; /* Firefox */
+          -ms-overflow-style: auto; /* IE and Edge */
+        }
+        .auto-scroll-container:hover::-webkit-scrollbar {
+          width: 6px;
+        }
+        .auto-scroll-container:hover::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .auto-scroll-container:hover::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .auto-scroll-container:hover::-webkit-scrollbar-thumb:hover {
           background: #94a3b8;
         }
       `}</style>
