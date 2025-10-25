@@ -90,7 +90,15 @@ export default function TVDisplayPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6 relative">
+      {/* Sasirangan Background Pattern */}
+      <div 
+        className="fixed inset-0 opacity-[0.04] pointer-events-none z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='sasirang' x='0' y='0' width='200' height='200' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 20 L40 60 L80 20 L120 60 L160 20 L200 60' stroke='%23854d0e' stroke-width='2' fill='none'/%3E%3Cpath d='M0 80 L40 40 L80 80 L120 40 L160 80 L200 40' stroke='%23854d0e' stroke-width='2' fill='none'/%3E%3Cpath d='M0 100 Q20 90 40 100 T80 100 T120 100 T160 100 T200 100' stroke='%23854d0e' stroke-width='1.5' fill='none'/%3E%3Cpath d='M0 140 L40 180 L80 140 L120 180 L160 140 L200 180' stroke='%23854d0e' stroke-width='2' fill='none'/%3E%3Cpath d='M0 200 L40 160 L80 200 L120 160 L160 200 L200 160' stroke='%23854d0e' stroke-width='2' fill='none'/%3E%3Cpath d='M20 0 L60 40 L20 80 L60 120 L20 160 L60 200' stroke='%23b45309' stroke-width='1.5' fill='none'/%3E%3Cpath d='M80 0 L120 40 L80 80 L120 120 L80 160 L120 200' stroke='%23b45309' stroke-width='1.5' fill='none'/%3E%3Cpath d='M140 0 L180 40 L140 80 L180 120 L140 160 L180 200' stroke='%23b45309' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='40' cy='60' r='3' fill='%23854d0e'/%3E%3Ccircle cx='120' cy='60' r='3' fill='%23854d0e'/%3E%3Ccircle cx='40' cy='180' r='3' fill='%23854d0e'/%3E%3Ccircle cx='120' cy='180' r='3' fill='%23854d0e'/%3E%3Cpath d='M100 0 Q100 20 120 20 T140 40 T160 60' stroke='%23a16207' stroke-width='1' fill='none'/%3E%3Cpath d='M100 100 Q100 120 120 120 T140 140 T160 160' stroke='%23a16207' stroke-width='1' fill='none'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23sasirang)'/%3E%3C/svg%3E")`
+        }}
+      ></div>
+      
       {/* Back Button - Fixed Position Bottom Left */}
       <button
         onClick={() => router.push('/admin/dashboard')}
