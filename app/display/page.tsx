@@ -63,12 +63,6 @@ export default function TVDisplayPage() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
       setCountdown((prev) => (prev === 0 ? 10 : prev - 1));
     }, 1000);
     return () => clearInterval(timer);

@@ -2,8 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifySession } from '@/lib/auth';
 
+let settingsCache: any = null;
+let cacheTimestamp: number = 0;
+const CACHE_DURATION = 5 * 60 * 1000;
+
 export async function GET() {
   try {
+    const now = Date.now();
+    
+    if (settingsCache && (now - cacheTimestamp) < CACHE_DURATION) {
+      return NextResponse.json({
+        success: true,
+        data: settingsCache
+      }, {
+        headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+      });
+    }
+
     let settings = await prisma.settings.findUnique({
       where: { id: 1 }
     });
@@ -18,9 +33,14 @@ export async function GET() {
       });
     }
 
+    settingsCache = settings;
+    cacheTimestamp = now;
+
     return NextResponse.json({
       success: true,
       data: settings
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
     });
 
   } catch (error: any) {
@@ -71,6 +91,9 @@ export async function PUT(request: NextRequest) {
         welcomeText: welcomeText || null,
       }
     });
+
+    settingsCache = settings;
+    cacheTimestamp = Date.now();
 
     return NextResponse.json({
       success: true,

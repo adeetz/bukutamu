@@ -69,8 +69,16 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [pagination.page, search]);
+    const debounceTimer = setTimeout(() => {
+      setSearch(searchInput);
+      setPagination(prev => ({ ...prev, page: 1 }));
+    }, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [searchInput]);
+
+  useEffect(() => {
+    if (user) fetchData();
+  }, [pagination.page, search, user]);
 
   const checkAuth = async () => {
     try {
@@ -107,8 +115,6 @@ export default function AdminDashboard() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearch(searchInput);
-    setPagination({ ...pagination, page: 1 });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -121,8 +127,12 @@ export default function AdminDashboard() {
       setExporting(true);
       toast.loading('Mengekspor data...');
       
-      // Fetch all data without pagination
-      const response = await fetch('/api/buku-tamu?limit=10000');
+      const params = new URLSearchParams({
+        limit: '1000',
+        skipCount: 'true',
+        ...(search && { search }),
+      });
+      const response = await fetch(`/api/buku-tamu?${params}`);
       const result = await response.json();
       const allData = result.data;
 
