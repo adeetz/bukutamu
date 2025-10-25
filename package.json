@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node -e \"try{require('fs').rmSync('node_modules/datapeserta',{recursive:true,force:true})}catch(e){}\"",
     "build": "prisma generate && next build",
     "start": "next start",
     "postinstall": "prisma generate",
