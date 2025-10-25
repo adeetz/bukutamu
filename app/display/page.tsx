@@ -91,14 +91,14 @@ export default function TVDisplayPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
-      {/* Back Button - Fixed Position - Subtle */}
+      {/* Back Button - Fixed Position Bottom Left */}
       <button
         onClick={() => router.push('/admin/dashboard')}
-        className="fixed top-4 right-4 z-40 px-3 py-2 bg-white/50 hover:bg-white text-gray-500 hover:text-gray-700 font-medium rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 flex items-center gap-2 backdrop-blur-sm opacity-40 hover:opacity-100"
+        className="fixed bottom-6 left-6 z-40 px-4 py-3 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-800 font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 backdrop-blur-sm border border-gray-200"
         title="Kembali ke Dashboard"
       >
-        <span className="text-lg">←</span>
-        <span className="hidden sm:inline text-sm">Dashboard</span>
+        <span className="text-xl">←</span>
+        <span className="text-sm font-semibold">Dashboard</span>
       </button>
 
       {/* Header */}
