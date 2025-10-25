@@ -1,6 +1,11 @@
 {
   "buildCommand": "prisma generate && npm run build",
   "installCommand": "npm install",
+  "build": {
+    "env": {
+      "NEXT_DISABLE_TURBOPACK": "1"
+    }
+  },
   "functions": {
     "app/api/**/*.ts": {
       "includeFiles": "node_modules/.prisma/client/**"
