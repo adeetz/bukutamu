@@ -11,13 +11,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
     const dateFilter = searchParams.get('date') || '';
+    const skipCount = searchParams.get('skipCount') === 'true';
     
     const skip = (page - 1) * limit;
 
-    // Build where clause
     const where: any = {};
     
-    // Search filter
     if (search) {
       where.OR = [
         { nama: { contains: search } },
@@ -39,13 +38,18 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    const total = await prisma.bukuTamu.count({ where });
     const data = await prisma.bukuTamu.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
     });
+
+    if (skipCount) {
+      return NextResponse.json({ data });
+    }
+
+    const total = await prisma.bukuTamu.count({ where });
 
     return NextResponse.json({
       data,

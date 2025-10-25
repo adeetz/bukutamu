@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -34,8 +34,8 @@ export default function TVDisplayPage() {
   const [isScrollPaused, setIsScrollPaused] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isResettingRef = useRef(false);
+  const timezoneOffsetRef = useRef<number>(new Date().getTimezoneOffset());
 
-  // Set form URL on client side only
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setFormUrl(`${window.location.origin}/form`);
@@ -45,8 +45,7 @@ export default function TVDisplayPage() {
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        const timezoneOffset = new Date().getTimezoneOffset();
-        const response = await fetch(`/api/buku-tamu?limit=100&page=1&date=${selectedDate}&timezoneOffset=${timezoneOffset}`);
+        const response = await fetch(`/api/buku-tamu?limit=100&page=1&date=${selectedDate}&timezoneOffset=${timezoneOffsetRef.current}&skipCount=true`);
         const result = await response.json();
         if (result.data) {
           setGuests(result.data);
@@ -115,7 +114,7 @@ export default function TVDisplayPage() {
     };
   }, [guests, isScrollPaused]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
     const date = new Date(isoString);
     return date.toLocaleDateString('id-ID', {
@@ -123,9 +122,9 @@ export default function TVDisplayPage() {
       month: 'long',
       year: 'numeric',
     });
-  };
+  }, []);
 
-  const formatTime = (dateString: string) => {
+  const formatTime = useCallback((dateString: string) => {
     const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
     const date = new Date(isoString);
     return date.toLocaleTimeString('id-ID', {
@@ -133,7 +132,7 @@ export default function TVDisplayPage() {
       minute: '2-digit',
       hour12: false,
     });
-  };
+  }, []);
 
   const getDateLabel = (dateStr: string) => {
     const selected = new Date(dateStr);

@@ -88,13 +88,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
     const isValidPassword = await bcrypt.compare(password, admin.password);
 
     if (!isValidPassword) {
-      // Record failed attempt
       recordFailedLogin(`user:${sanitizedUsername}`);
-      
       const lockoutStatus = checkAccountLockout(`user:${sanitizedUsername}`);
       const remainingAttempts = 5 - lockoutStatus.attempts;
       
