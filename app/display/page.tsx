@@ -30,6 +30,7 @@ export default function TVDisplayPage() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isScrollPaused, setIsScrollPaused] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isResettingRef = useRef(false);
 
   // Set form URL on client side only
   useEffect(() => {
@@ -80,27 +81,43 @@ export default function TVDisplayPage() {
 
     const container = scrollContainerRef.current;
     let scrollInterval: NodeJS.Timeout;
+    let pauseTimeout: NodeJS.Timeout;
 
     const startScroll = () => {
       scrollInterval = setInterval(() => {
+        // Skip jika sedang reset
+        if (isResettingRef.current) return;
+
         const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 5;
         
-        if (isAtBottom) {
-          // Tunggu sebentar di bawah, lalu kembali ke atas
-          setTimeout(() => {
+        if (isAtBottom && !isResettingRef.current) {
+          // Stop interval untuk mencegah bergetar
+          clearInterval(scrollInterval);
+          isResettingRef.current = true;
+          
+          // Pause 2 detik, lalu kembali ke atas
+          pauseTimeout = setTimeout(() => {
             container.scrollTo({ top: 0, behavior: 'smooth' });
-          }, 2000); // Pause 2 detik di bawah sebelum kembali ke atas
-        } else {
+            
+            // Tunggu animasi smooth scroll selesai (1 detik), baru mulai lagi
+            setTimeout(() => {
+              isResettingRef.current = false;
+              startScroll(); // Restart scroll
+            }, 1000);
+          }, 2000);
+        } else if (!isResettingRef.current) {
           // Scroll perlahan ke bawah
           container.scrollBy({ top: 1, behavior: 'auto' });
         }
-      }, 30); // Kecepatan scroll (semakin kecil semakin cepat)
+      }, 30);
     };
 
     startScroll();
 
     return () => {
       if (scrollInterval) clearInterval(scrollInterval);
+      if (pauseTimeout) clearTimeout(pauseTimeout);
+      isResettingRef.current = false;
     };
   }, [guests, isScrollPaused]);
 
