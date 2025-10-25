@@ -30,16 +30,17 @@ export async function GET(request: NextRequest) {
     // Date filter (filter by specific date with timezone support)
     if (dateFilter) {
       // Ambil timezone offset dari client (dalam menit, negatif untuk timezones di depan UTC)
+      // Contoh: WIB (UTC+7) = -420 menit
       const timezoneOffset = parseInt(searchParams.get('timezoneOffset') || '0');
       
-      // Buat tanggal di timezone user
-      const targetDate = new Date(dateFilter);
-      targetDate.setHours(0, 0, 0, 0);
+      // Parse dateFilter sebagai UTC midnight
+      const targetDate = new Date(dateFilter + 'T00:00:00Z');
       
-      // Convert ke UTC dengan mempertimbangkan timezone offset
-      // getTimezoneOffset() mengembalikan nilai negatif untuk timezone di depan UTC
-      // Contoh: WIB (UTC+7) = -420 menit
-      const utcStartDate = new Date(targetDate.getTime() - (timezoneOffset * 60 * 1000));
+      // Adjust ke timezone user: tambahkan offset untuk mendapatkan midnight di timezone user
+      // WIB = UTC+7 = offset -420, jadi kita TAMBAHKAN offset untuk convert UTC ke local
+      // Midnight di WIB dalam UTC = midnight UTC + offset
+      // Contoh: 25 Oct 00:00 WIB = 24 Oct 17:00 UTC (karena WIB = UTC+7)
+      const utcStartDate = new Date(targetDate.getTime() + (timezoneOffset * 60 * 1000));
       const utcEndDate = new Date(utcStartDate.getTime() + (24 * 60 * 60 * 1000));
 
       where.createdAt = {
@@ -128,11 +129,16 @@ export async function POST(request: NextRequest) {
     // Check for duplicate entry (same name and instansi on the same day)
     // Menggunakan timezone offset dari client untuk duplicate check yang akurat
     const timezoneOffset = body.timezoneOffset || 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     
-    // Convert ke UTC dengan mempertimbangkan timezone user
-    const utcToday = new Date(today.getTime() - (timezoneOffset * 60 * 1000));
+    // Dapatkan waktu sekarang dan adjust ke timezone user
+    const now = new Date();
+    // Konversi ke waktu di timezone user (pakai offset terbalik untuk adjust)
+    const localNow = new Date(now.getTime() - (timezoneOffset * 60 * 1000));
+    // Set ke midnight di timezone user
+    localNow.setUTCHours(0, 0, 0, 0);
+    // Konversi balik ke UTC: ini adalah "start of today in user timezone" dalam UTC
+    // Contoh: 25 Oct 00:00 WIB = 24 Oct 17:00 UTC (untuk WIB offset=-420)
+    const utcToday = new Date(localNow.getTime() + (timezoneOffset * 60 * 1000));
     const utcTomorrow = new Date(utcToday.getTime() + (24 * 60 * 60 * 1000));
 
     const existingEntry = await prisma.bukuTamu.findFirst({
