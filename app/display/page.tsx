@@ -43,7 +43,9 @@ export default function TVDisplayPage() {
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        const response = await fetch(`/api/buku-tamu?limit=100&page=1&date=${selectedDate}`);
+        // Kirim timezone offset browser ke server (dalam menit)
+        const timezoneOffset = new Date().getTimezoneOffset();
+        const response = await fetch(`/api/buku-tamu?limit=100&page=1&date=${selectedDate}&timezoneOffset=${timezoneOffset}`);
         const result = await response.json();
         if (result.data) {
           setGuests(result.data);

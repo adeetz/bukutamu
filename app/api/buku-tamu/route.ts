@@ -27,16 +27,24 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Date filter (filter by specific date)
+    // Date filter (filter by specific date with timezone support)
     if (dateFilter) {
+      // Ambil timezone offset dari client (dalam menit, negatif untuk timezones di depan UTC)
+      const timezoneOffset = parseInt(searchParams.get('timezoneOffset') || '0');
+      
+      // Buat tanggal di timezone user
       const targetDate = new Date(dateFilter);
       targetDate.setHours(0, 0, 0, 0);
-      const nextDay = new Date(targetDate);
-      nextDay.setDate(nextDay.getDate() + 1);
+      
+      // Convert ke UTC dengan mempertimbangkan timezone offset
+      // getTimezoneOffset() mengembalikan nilai negatif untuk timezone di depan UTC
+      // Contoh: WIB (UTC+7) = -420 menit
+      const utcStartDate = new Date(targetDate.getTime() - (timezoneOffset * 60 * 1000));
+      const utcEndDate = new Date(utcStartDate.getTime() + (24 * 60 * 60 * 1000));
 
       where.createdAt = {
-        gte: targetDate,
-        lt: nextDay,
+        gte: utcStartDate,
+        lt: utcEndDate,
       };
     }
 
@@ -118,18 +126,22 @@ export async function POST(request: NextRequest) {
     const sanitizedData = validation.sanitized!;
 
     // Check for duplicate entry (same name and instansi on the same day)
+    // Menggunakan timezone offset dari client untuk duplicate check yang akurat
+    const timezoneOffset = body.timezoneOffset || 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Convert ke UTC dengan mempertimbangkan timezone user
+    const utcToday = new Date(today.getTime() - (timezoneOffset * 60 * 1000));
+    const utcTomorrow = new Date(utcToday.getTime() + (24 * 60 * 60 * 1000));
 
     const existingEntry = await prisma.bukuTamu.findFirst({
       where: {
         nama: sanitizedData.nama,
         instansi: sanitizedData.instansi,
         createdAt: {
-          gte: today,
-          lt: tomorrow,
+          gte: utcToday,
+          lt: utcTomorrow,
         },
       },
     });

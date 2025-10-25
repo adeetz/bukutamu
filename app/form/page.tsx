@@ -146,6 +146,9 @@ export default function FormPage() {
         fotoUrl = uploadResult.url;
       }
 
+      // Kirim timezone offset browser ke server untuk duplicate check yang akurat
+      const timezoneOffset = new Date().getTimezoneOffset();
+      
       const response = await fetch('/api/buku-tamu', {
         method: 'POST',
         headers: {
@@ -155,6 +158,7 @@ export default function FormPage() {
           ...formData,
           fotoUrl,
           hcaptchaToken,
+          timezoneOffset,
         }),
       });
 
