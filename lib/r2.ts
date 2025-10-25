@@ -13,6 +13,5 @@ export const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
 export const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || '';
 
 export function getPublicImageUrl(key: string): string {
-  // All images (including logo) use API route for security and consistent access
   return `/api/images/${key}`;
 }

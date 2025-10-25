@@ -25,7 +25,6 @@ export default function TVDisplayPage() {
   const [formUrl, setFormUrl] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
-    // Gunakan tanggal lokal, bukan UTC
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
@@ -43,11 +42,9 @@ export default function TVDisplayPage() {
     }
   }, []);
 
-  // Fetch latest guests
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        // Kirim timezone offset browser ke server (dalam menit)
         const timezoneOffset = new Date().getTimezoneOffset();
         const response = await fetch(`/api/buku-tamu?limit=100&page=1&date=${selectedDate}&timezoneOffset=${timezoneOffset}`);
         const result = await response.json();
@@ -60,12 +57,10 @@ export default function TVDisplayPage() {
     };
 
     fetchGuests();
-    // Auto refresh setiap 10 detik
     const interval = setInterval(fetchGuests, 10000);
     return () => clearInterval(interval);
   }, [selectedDate]);
 
-  // Update clock setiap detik
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -73,15 +68,12 @@ export default function TVDisplayPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => (prev === 0 ? 10 : prev - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Auto-scroll untuk daftar tamu
   useEffect(() => {
     if (!scrollContainerRef.current || isScrollPaused || guests.length === 0) return;
 
@@ -91,17 +83,13 @@ export default function TVDisplayPage() {
 
     const startScroll = () => {
       scrollInterval = setInterval(() => {
-        // Skip jika sedang reset
         if (isResettingRef.current) return;
 
         const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 5;
         
         if (isAtBottom && !isResettingRef.current) {
-          // Stop interval untuk mencegah bergetar
           clearInterval(scrollInterval);
           isResettingRef.current = true;
-          
-          // Pause 2 detik, lalu kembali ke atas
           pauseTimeout = setTimeout(() => {
             container.scrollTo({ top: 0, behavior: 'smooth' });
             
@@ -128,8 +116,6 @@ export default function TVDisplayPage() {
   }, [guests, isScrollPaused]);
 
   const formatDate = (dateString: string) => {
-    // Pastikan date di-parse dengan benar
-    // Jika string tidak punya timezone info, tambahkan 'Z' untuk UTC
     const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
     const date = new Date(isoString);
     return date.toLocaleDateString('id-ID', {
@@ -140,8 +126,6 @@ export default function TVDisplayPage() {
   };
 
   const formatTime = (dateString: string) => {
-    // Pastikan date di-parse dengan benar sebagai UTC
-    // Jika string tidak punya timezone info, tambahkan 'Z' untuk UTC
     const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
     const date = new Date(isoString);
     return date.toLocaleTimeString('id-ID', {

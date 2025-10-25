@@ -275,7 +275,6 @@ export default function AdminDashboard() {
   };
 
   const formatDate = (dateString: string) => {
-    // Pastikan date di-parse dengan benar sebagai UTC
     const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
     const date = new Date(isoString);
     return date.toLocaleString('id-ID', {

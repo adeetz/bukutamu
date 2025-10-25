@@ -56,10 +56,9 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
 
 // Sanitasi nama file
 export function sanitizeFilename(filename: string): string {
-  // Hapus karakter berbahaya dan hanya simpan nama file yang aman
   return filename
-    .replace(/[^a-zA-Z0-9._-]/g, '_') // Ganti karakter tidak aman dengan underscore
-    .replace(/\.+/g, '.') // Hindari multiple dots
+    .replace(/[^a-zA-Z0-9._-]/g, '_')
+    .replace(/\.+/g, '.')
     .replace(/^\./, '') // Hapus dot di awal
     .substring(0, 255); // Limit panjang nama file
 }
@@ -110,9 +109,7 @@ export function checkRateLimit(
   return { allowed: true };
 }
 
-// Helper untuk mendapatkan IP dari request
 export function getClientIP(request: Request): string {
-  // Cek header X-Forwarded-For (dari proxy/CDN)
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
     return forwarded.split(',')[0].trim();
@@ -124,11 +121,9 @@ export function getClientIP(request: Request): string {
     return realIP;
   }
 
-  // Fallback ke 'unknown' jika tidak bisa dapat IP
   return 'unknown';
 }
 
-// Sanitasi username (hanya alphanumeric, underscore, dash)
 export function sanitizeUsername(username: string): string {
   return username
     .trim()
@@ -146,11 +141,9 @@ interface LockoutEntry {
 
 const lockoutStore = new Map<string, LockoutEntry>();
 
-// Cleanup expired lockout entries setiap 10 menit
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of lockoutStore.entries()) {
-    // Hapus entry yang sudah tidak aktif > 1 jam
     if (now - entry.lastAttempt > 60 * 60 * 1000) {
       lockoutStore.delete(key);
     }
@@ -191,7 +184,6 @@ export function checkAccountLockout(identifier: string): {
     return { locked: false, attempts: 0 };
   }
 
-  // Reset attempts jika sudah lewat attempt window
   if (now - entry.lastAttempt > ATTEMPT_WINDOW) {
     lockoutStore.delete(identifier);
     return { locked: false, attempts: 0 };
@@ -216,7 +208,6 @@ export function recordFailedLogin(identifier: string): void {
   entry.attempts++;
   entry.lastAttempt = now;
 
-  // Lock account jika sudah mencapai max attempts
   if (entry.attempts >= MAX_LOGIN_ATTEMPTS) {
     entry.lockedUntil = now + LOCKOUT_DURATION;
   }
@@ -264,7 +255,6 @@ export function validateBukuTamuInput(data: any): { valid: boolean; errors?: str
 
   // Validasi fotoUrl jika ada
   if (data.fotoUrl && typeof data.fotoUrl === 'string') {
-    // Validasi URL: bisa berupa URL penuh atau relative path
     const isValidUrl = data.fotoUrl.startsWith('http://') || data.fotoUrl.startsWith('https://');
     const isValidRelativePath = data.fotoUrl.startsWith('/');
     
