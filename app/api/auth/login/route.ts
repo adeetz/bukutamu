@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       userId: admin.id,
       username: admin.username,
       name: admin.name,
-      role: admin.role,
+      role: admin.role || 'ADMIN_BUPATI',
     });
 
     const duration = Date.now() - startTime;
