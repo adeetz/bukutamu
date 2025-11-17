@@ -291,21 +291,7 @@ export default function AdminDashboard() {
     setCompleteNote('');
   };
 
-  // Shortcut: Langsung arahkan ke Bupati dan setujui
-  const handleBupatiDirect = async (id: number) => {
-    try {
-      // Step 1: Arahkan ke Bupati
-      await submitBupatiAction(id, StatusTamu.DIARAHKAN, 'Bupati', 'Langsung diarahkan ke Bupati');
-      
-      // Step 2: Auto-approve setelah 1 detik
-      setTimeout(async () => {
-        await submitBupatiAction(id, StatusTamu.SELESAI, '', 'Disetujui langsung oleh Bupati');
-      }, 1000);
-    } catch (error) {
-      console.error('Error in Bupati direct:', error);
-      toast.error('Gagal memproses shortcut Bupati');
-    }
-  };
+
 
   const submitBupatiAction = async (id: number, newStatus: StatusTamu, diarahkanKe: string = '', catatanBupati: string = '') => {
     try {
@@ -765,12 +751,13 @@ export default function AdminDashboard() {
                                     <span className="hidden sm:inline">📍 Arahkan</span>
                                   </button>
                                   <button
-                                    onClick={() => handleBupatiDirect(item.id)}
-                                    className="px-3 sm:px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
-                                    title="Shortcut: Langsung arahkan ke Bupati dan setujui"
+                                    onClick={() => handleBupatiAction(item.id, StatusTamu.SELESAI)}
+                                    disabled={true}
+                                    className="px-3 sm:px-4 py-2 bg-gray-300 text-gray-500 font-semibold rounded-lg cursor-not-allowed shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                    title="Harus diarahkan dulu sebelum disetujui"
                                   >
-                                    <span className="inline sm:hidden">👑</span>
-                                    <span className="hidden sm:inline">👑 Bupati Langsung</span>
+                                    <span className="inline sm:hidden">✅</span>
+                                    <span className="hidden sm:inline">✅ Setujui</span>
                                   </button>
                                 </>
                               )}
@@ -1144,14 +1131,18 @@ export default function AdminDashboard() {
                   autoFocus
                 />
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {['Bagian Keuangan', 'Sekretaris Daerah', 'Dinas Pendidikan', 'Dinas Kesehatan'].map((suggestion) => (
+                  {['Bertemu Bupati Langsung', 'Bagian Keuangan', 'Sekretaris Daerah', 'Dinas Pendidikan', 'Dinas Kesehatan'].map((suggestion) => (
                     <button
                       key={suggestion}
                       type="button"
                       onClick={() => setDirectData({ ...directData, diarahkanKe: suggestion })}
-                      className="px-3 py-1.5 bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-700 rounded-lg text-sm transition-colors"
+                      className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                        suggestion === 'Bertemu Bupati Langsung'
+                          ? 'bg-purple-100 hover:bg-purple-200 text-purple-700 hover:text-purple-800 font-semibold'
+                          : 'bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-700'
+                      }`}
                     >
-                      {suggestion}
+                      {suggestion === 'Bertemu Bupati Langsung' ? '👑 ' : ''}{suggestion}
                     </button>
                   ))}
                 </div>
