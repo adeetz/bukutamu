@@ -82,10 +82,12 @@ export default function SettingsPage() {
 
       const data = await res.json();
       setFormData(prev => ({ ...prev, logoUrl: data.url }));
-      toast.success('Logo berhasil diupload', { id: loadingToast });
+      toast.dismiss(loadingToast);
+      toast.success('Logo berhasil diupload');
 
     } catch (error: any) {
-      toast.error('Gagal upload logo', { id: loadingToast });
+      toast.dismiss(loadingToast);
+      toast.error('Gagal upload logo');
     } finally {
       setUploading(false);
     }
