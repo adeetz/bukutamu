@@ -9,7 +9,6 @@ function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { settings } = useSettings();
-  const [countdown, setCountdown] = useState(10);
   const [guestName, setGuestName] = useState<string>('');
 
   useEffect(() => {
@@ -19,20 +18,6 @@ function SuccessContent() {
       setGuestName(decodeURIComponent(name));
     }
   }, [searchParams]);
-
-  // Countdown timer
-  useEffect(() => {
-    if (countdown <= 0) {
-      router.push('/');
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown(countdown - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -137,18 +122,12 @@ function SuccessContent() {
             </Link>
           </div>
 
-          {/* Auto Redirect Info */}
+          {/* Info */}
           <div className="text-sm text-gray-500 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <p>
-              Otomatis kembali ke beranda dalam{' '}
-              <span className="font-bold text-blue-600">{countdown}</span> detik
+            <p className="flex items-center justify-center gap-2">
+              <span>✨</span>
+              <span>Silakan tutup halaman ini atau klik tombol di atas</span>
             </p>
-            <button
-              onClick={() => router.push('/')}
-              className="text-blue-600 hover:text-blue-700 underline mt-2"
-            >
-              Kembali sekarang
-            </button>
           </div>
         </div>
 
