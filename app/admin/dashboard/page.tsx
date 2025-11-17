@@ -1,41 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
-
-interface BukuTamu {
-  id: number;
-  nama: string;
-  alamat: string;
-  instansi: string;
-  keperluan: string;
-  fotoUrl: string | null;
-  createdAt: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  name: string;
-}
-
-interface FormData {
-  nama: string;
-  alamat: string;
-  instansi: string;
-  keperluan: string;
-  fotoUrl?: string;
-}
-
-interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
+import { BukuTamu, User, FormData, Pagination, StatusTamu, UserRole } from './types';
+import { formatDate, closeModal } from './helpers';
+import StatusBadge from './StatusBadge';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -55,14 +27,23 @@ export default function AdminDashboard() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusTamu | 'ALL'>('ALL');
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
-    limit: 10,
+    limit: 1000, // Load semua data
     total: 0,
     totalPages: 0,
   });
   const [exporting, setExporting] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [showDirectModal, setShowDirectModal] = useState(false);
+  const [directingId, setDirectingId] = useState<number | null>(null);
+  const [directData, setDirectData] = useState({ diarahkanKe: '', catatanBupati: '' });
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completingId, setCompletingId] = useState<number | null>(null);
+  const [completeNote, setCompleteNote] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<{ id: number; nama: string } | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -77,8 +58,17 @@ export default function AdminDashboard() {
   }, [searchInput]);
 
   useEffect(() => {
-    if (user) fetchData();
-  }, [pagination.page, search, user]);
+    if (user && pagination) {
+      fetchData();
+      
+      // Auto refresh setiap 30 detik
+      const interval = setInterval(() => {
+        fetchData();
+      }, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [search, statusFilter, user]);
 
   const checkAuth = async () => {
     try {
@@ -94,24 +84,34 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: (pagination?.page || 1).toString(),
+        limit: (pagination?.limit || 10).toString(),
         ...(search && { search }),
+        ...(statusFilter !== 'ALL' && { status: statusFilter }),
       });
       const response = await fetch(`/api/buku-tamu?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
-      setData(result.data);
-      setPagination(result.pagination);
+      setData(result.data || []);
+      if (result.pagination) {
+        setPagination(result.pagination);
+      }
     } catch (error) {
-      toast.error('Gagal memuat data');
+      console.error('Fetch data error:', error);
+      toast.error('Gagal memuat data: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setData([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination, search, statusFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,6 +214,124 @@ export default function AdminDashboard() {
     });
   };
 
+  // Admin workflow handlers
+  const [updating, setUpdating] = useState<number | null>(null);
+
+  const handleWhatsAppContact = (whatsappNumber: string) => {
+    if (!whatsappNumber) {
+      toast.error('Nomor WhatsApp tidak tersedia');
+      return;
+    }
+    
+    const message = encodeURIComponent(
+      `Halo! Terima kasih telah mendaftar di buku tamu digital. Admin akan segera mengatur jadwal kunjungan Anda. Mohon konfirmasi ketersediaan Anda.`
+    );
+    const cleanNumber = whatsappNumber.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanNumber}?text=${message}`, '_blank');
+    toast.success('Membuka WhatsApp...');
+  };
+
+  const handleScheduleAppointment = async (id: number) => {
+    const scheduledDate = prompt('Masukkan tanggal appointment (YYYY-MM-DD):');
+    if (!scheduledDate) return;
+    
+    const scheduledTime = prompt('Masukkan waktu appointment (HH:MM):');
+    if (!scheduledTime) return;
+    
+    try {
+      setUpdating(id);
+      
+      const scheduledAt = `${scheduledDate} ${scheduledTime}`;
+      
+      const response = await fetch(`/api/buku-tamu/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: 'DIJADWALKAN',
+          scheduledAt: scheduledAt,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Gagal menjadwalkan appointment');
+
+      toast.success(`Appointment dijadwalkan untuk ${scheduledDate} jam ${scheduledTime}`);
+      fetchData();
+    } catch (error) {
+      toast.error('Gagal menjadwalkan appointment');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleBupatiAction = async (id: number, newStatus: StatusTamu) => {
+    if (newStatus === StatusTamu.DIARAHKAN) {
+      // Buka modal untuk input pengarahan
+      setDirectingId(id);
+      setDirectData({ diarahkanKe: '', catatanBupati: '' });
+      setShowDirectModal(true);
+    } else if (newStatus === StatusTamu.SELESAI) {
+      // Buka modal untuk konfirmasi selesai
+      setCompletingId(id);
+      setCompleteNote('');
+      setShowCompleteModal(true);
+    }
+  };
+
+  const handleCompleteSubmit = async (approved: boolean) => {
+    if (!completingId) return;
+    
+    if (approved) {
+      await submitBupatiAction(completingId, StatusTamu.SELESAI, '', completeNote);
+    } else {
+      await submitBupatiAction(completingId, StatusTamu.DITOLAK, '', completeNote || 'Kunjungan ditolak');
+    }
+    
+    setShowCompleteModal(false);
+    setCompletingId(null);
+    setCompleteNote('');
+  };
+
+  const submitBupatiAction = async (id: number, newStatus: StatusTamu, diarahkanKe: string = '', catatanBupati: string = '') => {
+    try {
+      const response = await fetch(`/api/buku-tamu/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newStatus,
+          diarahkanKe: newStatus === StatusTamu.DIARAHKAN ? diarahkanKe : null,
+          catatanBupati
+        })
+      });
+
+      if (response.ok) {
+        toast.success(
+          newStatus === StatusTamu.DIARAHKAN 
+            ? `Tamu berhasil diarahkan ke ${diarahkanKe}` 
+            : 'Status berhasil diperbarui'
+        );
+        setShowDirectModal(false);
+        setDirectingId(null);
+        setDirectData({ diarahkanKe: '', catatanBupati: '' });
+        fetchData();
+      } else {
+        throw new Error('Gagal memperbarui status');
+      }
+    } catch (error) {
+      toast.error('Gagal memperbarui status tamu');
+    }
+  };
+
+  const handleDirectSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directData.diarahkanKe.trim()) {
+      toast.error('Silakan isi tujuan pengarahan tamu');
+      return;
+    }
+    if (directingId) {
+      submitBupatiAction(directingId, StatusTamu.DIARAHKAN, directData.diarahkanKe, directData.catatanBupati);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -251,14 +369,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-      return;
-    }
+  const handleDeleteClick = (id: number, nama: string) => {
+    setDeletingItem({ id, nama });
+    setShowDeleteModal(true);
+  };
 
-    setDeleting(id);
+  const handleDeleteConfirm = async () => {
+    if (!deletingItem) return;
+
+    setDeleting(deletingItem.id);
     try {
-      const response = await fetch(`/api/buku-tamu/${id}`, {
+      const response = await fetch(`/api/buku-tamu/${deletingItem.id}`, {
         method: 'DELETE',
       });
 
@@ -266,8 +387,10 @@ export default function AdminDashboard() {
         throw new Error('Gagal menghapus data');
       }
 
-      setData(data.filter((item) => item.id !== id));
+      setData(data.filter((item) => item.id !== deletingItem.id));
       toast.success('Data berhasil dihapus!');
+      setShowDeleteModal(false);
+      setDeletingItem(null);
     } catch (error) {
       toast.error('Gagal menghapus data. Silakan coba lagi.');
     } finally {
@@ -284,18 +407,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const isoString = dateString.includes('Z') || dateString.includes('+') ? dateString : dateString + 'Z';
-    const date = new Date(isoString);
-    return date.toLocaleString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-  };
+
 
   if (!user) {
     return (
@@ -319,6 +431,7 @@ export default function AdminDashboard() {
               <th className="px-6 py-4 text-left text-sm font-semibold">Instansi</th>
               <th className="px-6 py-4 text-left text-sm font-semibold">Alamat</th>
               <th className="px-6 py-4 text-left text-sm font-semibold">Keperluan</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold">Status & Pengarahan</th>
               <th className="px-6 py-4 text-left text-sm font-semibold">Tanggal</th>
               <th className="px-6 py-4 text-center text-sm font-semibold">Aksi</th>
             </tr>
@@ -340,6 +453,9 @@ export default function AdminDashboard() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="h-4 bg-gray-200 rounded w-56"></div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="h-4 bg-gray-200 rounded w-32"></div>
@@ -381,13 +497,15 @@ export default function AdminDashboard() {
 
           {/* Action Buttons - Mobile Friendly Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-            <button
-              onClick={() => handleOpenModal()}
-              className="w-full px-4 py-3 sm:py-3.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
-            >
-              <span className="block sm:inline">➕</span>
-              <span className="block sm:inline sm:ml-1">Tambah Data</span>
-            </button>
+            {user?.role !== 'BUPATI' && (
+              <button
+                onClick={() => handleOpenModal()}
+                className="w-full px-4 py-3 sm:py-3.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
+              >
+                <span className="block sm:inline">➕</span>
+                <span className="block sm:inline sm:ml-1">Tambah Data</span>
+              </button>
+            )}
             <button
               onClick={handleExport}
               disabled={exporting}
@@ -441,6 +559,21 @@ export default function AdminDashboard() {
               />
             </div>
             <div className="flex gap-2 sm:gap-3">
+              {/* Filter Status akan diaktifkan setelah database migration
+              {user?.role === UserRole.ADMIN_BUPATI && (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as StatusTamu | 'ALL')}
+                  className="px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base bg-white"
+                >
+                  <option value="ALL">📋 Semua Status</option>
+                  <option value={StatusTamu.MENUNGGU}>🕐 Menunggu</option>
+                  <option value={StatusTamu.DIARAHKAN}>👥 Diarahkan</option>
+                  <option value={StatusTamu.SELESAI}>✅ Selesai</option>
+                </select>
+              )}
+              */}
+              
               <button
                 type="submit"
                 className="flex-1 sm:flex-none px-6 sm:px-8 py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
@@ -453,7 +586,7 @@ export default function AdminDashboard() {
                   onClick={() => {
                     setSearch('');
                     setSearchInput('');
-                    setPagination({ ...pagination, page: 1 });
+                    setPagination(prev => ({ ...prev, page: 1 }));
                   }}
                   className="flex-1 sm:flex-none px-4 sm:px-6 py-3 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl text-sm sm:text-base"
                 >
@@ -482,27 +615,57 @@ export default function AdminDashboard() {
         ) : (
           <div className="glass-effect rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+              <table className="w-full min-w-max">
+                <thead className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Foto</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Nama</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Instansi</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Alamat</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Keperluan</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">Tanggal</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold">Aksi</th>
+                    <th className="px-4 py-4 text-center text-sm font-bold whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-lg">📸</span>
+                        <span>FOTO</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-4 text-left text-sm font-bold whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">👤</span>
+                        <span>DATA PENGUNJUNG</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-4 text-left text-sm font-bold whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📝</span>
+                        <span>KEPERLUAN</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-4 text-left text-sm font-bold whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🎯</span>
+                        <span>STATUS</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-4 text-left text-sm font-bold whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🕐</span>
+                        <span>WAKTU</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-4 text-center text-sm font-bold whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-lg">⚡</span>
+                        <span>AKSI</span>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {data.map((item) => (
+                <tbody className="divide-y divide-gray-100 bg-white">
+                  {data.map((item, index) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-gray-50 transition-colors"
+                      className={`hover:bg-blue-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
                     >
-                      <td className="px-6 py-4">
+                      {/* Foto */}
+                      <td className="px-4 py-3">
                         <div 
-                          className="w-16 h-16 relative rounded-lg overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 cursor-pointer hover:shadow-lg transition-all"
+                          className="w-14 h-14 relative rounded-xl overflow-hidden bg-gradient-to-br from-blue-100 to-purple-100 cursor-pointer hover:scale-110 hover:shadow-xl transition-all ring-2 ring-white"
                           onClick={() => item.fotoUrl && setSelectedPhoto(item.fotoUrl)}
                         >
                           {item.fotoUrl ? (
@@ -520,58 +683,119 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-gray-800">
-                          {item.nama}
+
+                      {/* Data Pengunjung */}
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <div className="font-bold text-gray-900 text-sm">{item.nama}</div>
+                          <div className="text-xs text-gray-600">
+                            <span className="inline-flex items-center gap-1">
+                              <span>🏢</span>
+                              <span className="font-medium">{item.instansi}</span>
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            <span className="inline-flex items-center gap-1">
+                              <span>📍</span>
+                              <span>{item.alamat}</span>
+                            </span>
+                          </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-700">{item.instansi}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600 text-sm">
-                          {item.alamat}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-600 text-sm">
+
+                      {/* Keperluan */}
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-700 max-w-xs">
                           {item.keperluan}
-                        </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-gray-500 text-xs">
+
+                      {/* Status */}
+                      <td className="px-4 py-3">
+                        <StatusBadge 
+                          status={item.status}
+                          diarahkanKe={item.diarahkanKe}
+                          catatanBupati={item.catatanBupati}
+                        />
+                      </td>
+
+                      {/* Waktu */}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-xs text-gray-600">
                           {formatDate(item.createdAt)}
-                        </span>
+                        </div>
                       </td>
-                      <td className="px-3 sm:px-6 py-4 text-center">
+
+                      {/* Aksi */}
+                      <td className="px-4 py-3 text-center">
                         <div className="flex gap-1 sm:gap-2 justify-center flex-col sm:flex-row">
-                          <button
-                            onClick={() => handleOpenModal(item)}
-                            className="px-3 sm:px-4 py-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
-                          >
-                            <span className="inline sm:hidden">✏️</span>
-                            <span className="hidden sm:inline">✏️ Edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            disabled={deleting === item.id}
-                            className="px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 disabled:bg-red-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
-                          >
-                            {deleting === item.id ? (
-                              <span className="flex items-center gap-2 justify-center">
-                                <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span className="hidden sm:inline">...</span>
-                              </span>
-                            ) : (
-                              <>
-                                <span className="inline sm:hidden">🗑️</span>
-                                <span className="hidden sm:inline">🗑️ Hapus</span>
-                              </>
-                            )}
-                          </button>
+                          {user?.role === 'BUPATI' ? (
+                            /* Actions untuk Bupati - workflow management */
+                            <>
+                              {item.status === 'MENUNGGU' && (
+                                <>
+                                  <button
+                                    onClick={() => handleWhatsAppContact(item.whatsapp)}
+                                    className="px-3 sm:px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                  >
+                                    <span className="inline sm:hidden">📞</span>
+                                    <span className="hidden sm:inline">📞 Hubungi</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleBupatiAction(item.id, StatusTamu.DIARAHKAN)}
+                                    className="px-3 sm:px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                  >
+                                    <span className="inline sm:hidden">📍</span>
+                                    <span className="hidden sm:inline">📍 Arahkan</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleBupatiAction(item.id, StatusTamu.SELESAI)}
+                                    className="px-3 sm:px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                  >
+                                    <span className="inline sm:hidden">✅</span>
+                                    <span className="hidden sm:inline">✅ Setujui</span>
+                                  </button>
+                                </>
+                              )}
+                              {(item.status === StatusTamu.SELESAI || item.status === StatusTamu.DIARAHKAN) && (
+                                <span className="px-3 sm:px-4 py-2 bg-gray-100 text-green-600 font-semibold rounded-lg text-xs sm:text-sm">
+                                  ✅ Selesai
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            /* Actions untuk Admin Bupati - full management */
+                            <>
+                              <button
+                                onClick={() => handleOpenModal(item)}
+                                className="px-3 sm:px-4 py-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                              >
+                                <span className="inline sm:hidden">✏️</span>
+                                <span className="hidden sm:inline">✏️ Edit</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleDeleteClick(item.id, item.nama)}
+                                disabled={deleting === item.id}
+                                className="px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 active:bg-red-700 disabled:bg-red-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-xs sm:text-sm whitespace-nowrap"
+                              >
+                                {deleting === item.id ? (
+                                  <span className="flex items-center gap-2 justify-center">
+                                    <svg className="animate-spin h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span className="hidden sm:inline">...</span>
+                                  </span>
+                                ) : (
+                                  <>
+                                    <span className="inline sm:hidden">🗑️</span>
+                                    <span className="hidden sm:inline">🗑️ Hapus</span>
+                                  </>
+                                )}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -580,191 +804,230 @@ export default function AdminDashboard() {
               </table>
             </div>
 
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-                  Halaman {pagination.page} dari {pagination.totalPages} ({pagination.total} total data)
+            {/* Info Total Data */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700 font-medium">
+                  📊 Total: <span className="font-bold text-blue-600">{pagination.total}</span> pengunjung
                 </div>
-                <div className="flex gap-1 sm:gap-2 flex-wrap justify-center">
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={pagination.page === 1}
-                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
-                  >
-                    <span className="hidden sm:inline">⏮️ First</span>
-                    <span className="sm:hidden">⏮️</span>
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
-                  >
-                    <span className="hidden sm:inline">◀️ Prev</span>
-                    <span className="sm:hidden">◀️</span>
-                  </button>
-                  
-                  {/* Page Numbers */}
-                  <div className="flex gap-1">
-                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                      let pageNum;
-                      if (pagination.totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (pagination.page <= 3) {
-                        pageNum = i + 1;
-                      } else if (pagination.page >= pagination.totalPages - 2) {
-                        pageNum = pagination.totalPages - 4 + i;
-                      } else {
-                        pageNum = pagination.page - 2 + i;
-                      }
-                      
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                          className={`px-2 sm:px-4 py-2 rounded-lg font-semibold transition-all text-xs sm:text-sm min-w-[2rem] sm:min-w-[2.5rem] ${
-                            pagination.page === pageNum
-                              ? 'bg-blue-500 text-white shadow-lg'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.totalPages}
-                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
-                  >
-                    <span className="hidden sm:inline">Next ▶️</span>
-                    <span className="sm:hidden">▶️</span>
-                  </button>
-                  <button
-                    onClick={() => handlePageChange(pagination.totalPages)}
-                    disabled={pagination.page === pagination.totalPages}
-                    className="px-2 sm:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm"
-                  >
-                    <span className="hidden sm:inline">Last ⏭️</span>
-                    <span className="sm:hidden">⏭️</span>
-                  </button>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Auto-refresh setiap 30 detik
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
 
       {/* Modal Form */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-4 sm:p-6 rounded-t-2xl">
-              <h2 className="text-xl sm:text-2xl font-bold">
-                {editingId ? '✏️ Edit Data Tamu' : '➕ Tambah Data Tamu'}
-              </h2>
+        <div 
+          className="fixed inset-0 backdrop-blur-lg z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={handleCloseModal}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">{editingId ? '✏️' : '➕'}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">
+                      {editingId ? 'Edit Data Tamu' : 'Tambah Data Tamu'}
+                    </h3>
+                    <p className="text-sm text-white text-opacity-90">
+                      {editingId ? 'Perbarui informasi tamu' : 'Tambahkan tamu baru'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+            {/* Body - Scrollable */}
+            <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  Nama Lengkap *
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nama Lengkap <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.nama}
                   onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base"
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  Alamat *
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Alamat <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
                   value={formData.alamat}
                   onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base resize-none"
                   placeholder="Masukkan alamat lengkap"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  Instansi *
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Instansi <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.instansi}
                   onChange={(e) => setFormData({ ...formData, instansi: e.target.value })}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base"
                   placeholder="Masukkan nama instansi"
+                />
+              </div>
+
+              {/* Field baru akan diaktifkan setelah database migration
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                  Nomor WhatsApp *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value=""
+                  onChange={() => {}}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  placeholder="Contoh: 081234567890"
+                  pattern="[0-9]{10,15}"
                 />
               </div>
 
               <div>
                 <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  Keperluan *
+                  Tempat Kunjungan *
+                </label>
+                <select
+                  required
+                  value=""
+                  onChange={() => {}}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                >
+                  <option value="">Pilih tempat kunjungan</option>
+                  <option value="Kantor Bupati">Kantor Bupati</option>
+                  <option value="Rumah Jabatan">Rumah Jabatan</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                    Tanggal Kunjungan *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value=""
+                    onChange={() => {}}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
+                    Jam Kunjungan *
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value=""
+                    onChange={() => {}}
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  />
+                </div>
+              </div>
+              */}
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Keperluan <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
                   value={formData.keperluan}
                   onChange={(e) => setFormData({ ...formData, keperluan: e.target.value })}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base resize-none"
                   placeholder="Masukkan keperluan kunjungan"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
-                  URL Foto (Opsional)
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  URL Foto <span className="text-gray-400 text-xs">(Opsional)</span>
                 </label>
                 <input
                   type="url"
                   value={formData.fotoUrl}
                   onChange={(e) => setFormData({ ...formData, fotoUrl: e.target.value })}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-base"
                   placeholder="https://example.com/foto.jpg"
                 />
               </div>
-
-              <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-4">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-sm sm:text-base"
-                >
-                  {saving ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span className="hidden sm:inline">Menyimpan...</span>
-                    </span>
-                  ) : (
-                    editingId ? '💾 Update Data' : '➕ Tambah Data'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  disabled={saving}
-                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors shadow-md disabled:cursor-not-allowed text-sm sm:text-base"
-                >
-                  ❌ Batal
-                </button>
-              </div>
             </form>
+            </div>
+
+            {/* Footer - Sticky Buttons */}
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex gap-3">
+              <button
+                type="submit"
+                form="editForm"
+                disabled={saving}
+                onClick={handleSubmit}
+                className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menyimpan...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <span>{editingId ? '💾' : '➕'}</span>
+                    <span>{editingId ? 'Update Data' : 'Tambah Data'}</span>
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                disabled={saving}
+                className="px-6 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Batal
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -788,6 +1051,301 @@ export default function AdminDashboard() {
               className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pengarahan Tamu - Modern UI */}
+      {showDirectModal && (
+        <div 
+          className="fixed inset-0 backdrop-blur-lg z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => {
+            setShowDirectModal(false);
+            setDirectingId(null);
+            setDirectData({ diarahkanKe: '', catatanBupati: '' });
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-6 py-5 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">📍</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Arahkan Tamu</h3>
+                    <p className="text-sm text-white text-opacity-90">Tentukan tujuan pengarahan</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDirectModal(false);
+                    setDirectingId(null);
+                    setDirectData({ diarahkanKe: '', catatanBupati: '' });
+                  }}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <form onSubmit={handleDirectSubmit} className="p-6 space-y-5">
+              {/* Tujuan Pengarahan */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Arahkan ke mana? <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={directData.diarahkanKe}
+                  onChange={(e) => setDirectData({ ...directData, diarahkanKe: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base"
+                  placeholder="Contoh: Bagian Keuangan, Sekretaris Daerah..."
+                  autoFocus
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {['Bagian Keuangan', 'Sekretaris Daerah', 'Dinas Pendidikan', 'Dinas Kesehatan'].map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => setDirectData({ ...directData, diarahkanKe: suggestion })}
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-orange-100 text-gray-700 hover:text-orange-700 rounded-lg text-sm transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Catatan */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Catatan <span className="text-gray-400 text-xs">(Opsional)</span>
+                </label>
+                <textarea
+                  value={directData.catatanBupati}
+                  onChange={(e) => setDirectData({ ...directData, catatanBupati: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-base resize-none"
+                  placeholder="Tambahkan catatan untuk tamu..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-95"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>✓</span>
+                    <span>Arahkan Tamu</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDirectModal(false);
+                    setDirectingId(null);
+                    setDirectData({ diarahkanKe: '', catatanBupati: '' });
+                  }}
+                  className="px-6 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-all"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Selesai Kunjungan - Setujui/Tolak */}
+      {showCompleteModal && (
+        <div 
+          className="fixed inset-0 backdrop-blur-lg z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => {
+            setShowCompleteModal(false);
+            setCompletingId(null);
+            setCompleteNote('');
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-5 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Selesaikan Kunjungan</h3>
+                    <p className="text-sm text-white text-opacity-90">Konfirmasi status kunjungan</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCompleteModal(false);
+                    setCompletingId(null);
+                    setCompleteNote('');
+                  }}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-5">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p className="text-sm text-gray-700">
+                  Apakah Anda yakin ingin menyelesaikan kunjungan ini?
+                </p>
+              </div>
+
+              {/* Catatan */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Catatan <span className="text-gray-400 text-xs">(Opsional)</span>
+                </label>
+                <textarea
+                  value={completeNote}
+                  onChange={(e) => setCompleteNote(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-base resize-none"
+                  placeholder="Tambahkan catatan selesai kunjungan..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => handleCompleteSubmit(true)}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-95"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>✓</span>
+                    <span>Setujui</span>
+                  </span>
+                </button>
+                <button
+                  onClick={() => handleCompleteSubmit(false)}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-95"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>✗</span>
+                    <span>Tolak</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Konfirmasi Hapus */}
+      {showDeleteModal && deletingItem && (
+        <div 
+          className="fixed inset-0 backdrop-blur-lg z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => {
+            setShowDeleteModal(false);
+            setDeletingItem(null);
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-5 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">⚠️</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold">Konfirmasi Hapus</h3>
+                    <p className="text-sm text-white text-opacity-90">Tindakan ini tidak dapat dibatalkan</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeletingItem(null);
+                  }}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-all"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-4">
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                <p className="text-sm text-gray-700 mb-2">
+                  Apakah Anda yakin ingin menghapus data tamu berikut?
+                </p>
+                <p className="font-bold text-gray-900">
+                  {deletingItem.nama}
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <p className="text-xs text-gray-600">
+                  ⚠️ Data yang sudah dihapus tidak dapat dikembalikan lagi.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDeleteConfirm}
+                  disabled={deleting === deletingItem.id}
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleting === deletingItem.id ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Menghapus...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <span>🗑️</span>
+                      <span>Ya, Hapus</span>
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeletingItem(null);
+                  }}
+                  disabled={deleting === deletingItem.id}
+                  className="flex-1 px-6 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

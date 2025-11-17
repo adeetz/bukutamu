@@ -223,6 +223,10 @@ export interface BukuTamuInput {
   alamat: string;
   instansi: string;
   keperluan: string;
+  whatsapp: string;
+  tempatKunjungan: string;
+  tanggalKunjungan: string;
+  jamKunjungan: string;
   fotoUrl?: string | null;
 }
 
@@ -253,6 +257,59 @@ export function validateBukuTamuInput(data: any): { valid: boolean; errors?: str
     errors.push(keperluanValidation.error!);
   }
 
+  // Validasi WhatsApp
+  if (!data.whatsapp || data.whatsapp.trim().length === 0) {
+    errors.push('Nomor WhatsApp tidak boleh kosong');
+  } else if (data.whatsapp.length > 20) {
+    errors.push('Nomor WhatsApp maksimal 20 karakter');
+  } else {
+    // Validasi format nomor WhatsApp (hanya angka, 10-15 digit)
+    const whatsappClean = data.whatsapp.replace(/\D/g, '');
+    if (whatsappClean.length < 10 || whatsappClean.length > 15) {
+      errors.push('Nomor WhatsApp harus 10-15 digit');
+    }
+  }
+
+  // Validasi tempat kunjungan
+  if (!data.tempatKunjungan || data.tempatKunjungan.trim().length === 0) {
+    errors.push('Tempat kunjungan tidak boleh kosong');
+  } else {
+    const validTempat = ['Kantor Bupati', 'Rumah Jabatan'];
+    if (!validTempat.includes(data.tempatKunjungan)) {
+      errors.push('Tempat kunjungan tidak valid');
+    }
+  }
+
+  // Validasi tanggal kunjungan
+  if (!data.tanggalKunjungan || data.tanggalKunjungan.trim().length === 0) {
+    errors.push('Tanggal kunjungan tidak boleh kosong');
+  } else {
+    // Validasi format tanggal YYYY-MM-DD
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(data.tanggalKunjungan)) {
+      errors.push('Format tanggal kunjungan tidak valid');
+    } else {
+      const tanggalKunjungan = new Date(data.tanggalKunjungan);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (tanggalKunjungan < today) {
+        errors.push('Tanggal kunjungan tidak boleh kurang dari hari ini');
+      }
+    }
+  }
+
+  // Validasi jam kunjungan
+  if (!data.jamKunjungan || data.jamKunjungan.trim().length === 0) {
+    errors.push('Jam kunjungan tidak boleh kosong');
+  } else {
+    // Validasi format jam HH:MM
+    const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timePattern.test(data.jamKunjungan)) {
+      errors.push('Format jam kunjungan tidak valid');
+    }
+  }
+
   // Validasi fotoUrl jika ada
   if (data.fotoUrl && typeof data.fotoUrl === 'string') {
     const isValidUrl = data.fotoUrl.startsWith('http://') || data.fotoUrl.startsWith('https://');
@@ -280,6 +337,10 @@ export function validateBukuTamuInput(data: any): { valid: boolean; errors?: str
       alamat: sanitizeInput(data.alamat),
       instansi: sanitizeInput(data.instansi),
       keperluan: sanitizeInput(data.keperluan),
+      whatsapp: sanitizeInput(data.whatsapp.replace(/\D/g, '')), // Hanya angka
+      tempatKunjungan: sanitizeInput(data.tempatKunjungan),
+      tanggalKunjungan: data.tanggalKunjungan,
+      jamKunjungan: data.jamKunjungan,
       fotoUrl: data.fotoUrl || null
     }
   };

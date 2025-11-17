@@ -11,6 +11,7 @@ export interface SessionPayload {
   userId: number;
   username: string;
   name: string;
+  role: string;
   [key: string]: any;
 }
 

@@ -119,6 +119,7 @@ export async function POST(request: NextRequest) {
       userId: admin.id,
       username: admin.username,
       name: admin.name,
+      role: admin.role,
     });
 
     const duration = Date.now() - startTime;
@@ -134,6 +135,7 @@ export async function POST(request: NextRequest) {
         id: admin.id,
         username: admin.username,
         name: admin.name,
+        role: admin.role,
       },
     });
   } catch (error) {

@@ -57,8 +57,33 @@ export function GuestCard({ guest, index, onPhotoClick }: GuestCardProps) {
               </span>
             </div>
             
+            {/* Field baru akan ditampilkan setelah database migration
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <span className="text-green-600">📱</span>
+                <span className="text-gray-600 font-medium">{guest.whatsapp}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-blue-600">🏛️</span>
+                <span className="text-gray-600 font-medium">{guest.tempatKunjungan}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-purple-600 text-lg flex-shrink-0">📅</span>
+              <span className="text-gray-600 font-medium">
+                {new Date(guest.tanggalKunjungan).toLocaleDateString('id-ID', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })} • {guest.jamKunjungan}
+              </span>
+            </div>
+            */}
+            
             <div className="flex items-start gap-2">
-              <span className="text-purple-600 text-lg flex-shrink-0">📋</span>
+              <span className="text-pink-600 text-lg flex-shrink-0">📋</span>
               <span className="text-gray-600 text-base break-words line-clamp-2">
                 {guest.keperluan}
               </span>

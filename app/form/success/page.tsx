@@ -87,16 +87,35 @@ function SuccessContent() {
             </p>
           </div>
 
-          {/* Info Box */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          {/* Contact Info */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-start gap-3 text-left">
-              <div className="flex-shrink-0 text-2xl">ℹ️</div>
+              <div className="flex-shrink-0 text-2xl">📞</div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-2">Informasi:</h3>
+                <h3 className="font-semibold text-gray-800 mb-2">Langkah Selanjutnya:</h3>
+                <ul className="text-sm text-gray-600 space-y-2">
+                  <li>✅ <strong>Data berhasil dikirim</strong> - ID Pendaftaran: <span className="font-mono text-blue-600">#{searchParams.get('id') || 'Loading...'}</span></li>
+                  <li>📱 <strong>Admin akan menghubungi Anda</strong> dalam 1x24 jam via WhatsApp</li>
+                  <li>📅 <strong>Jadwal kunjungan</strong> akan dikonfirmasi oleh admin</li>
+                  {searchParams.get('whatsapp') && (
+                    <li>📲 <strong>Pastikan WhatsApp aktif:</strong> <span className="font-semibold text-green-600">{decodeURIComponent(searchParams.get('whatsapp') || '')}</span></li>
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Important Notes */}
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 mb-8 animate-fade-in" style={{ animationDelay: '0.45s' }}>
+            <div className="flex items-start gap-3 text-left">
+              <div className="flex-shrink-0 text-2xl">⚠️</div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-2">Penting:</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>✅ Data Anda telah tersimpan dengan aman</li>
-                  <li>✅ Admin akan meninjau informasi Anda</li>
-                  <li>✅ Jika ada pertanyaan, hubungi admin</li>
+                  <li>• Simpan ID Pendaftaran untuk referensi</li>
+                  <li>• Pastikan nomor WhatsApp dapat dihubungi</li>
+                  <li>• Siapkan dokumen sesuai keperluan</li>
+                  <li>• Datang sesuai jadwal yang dikonfirmasi admin</li>
                 </ul>
               </div>
             </div>

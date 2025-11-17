@@ -20,6 +20,10 @@ export default function FormPage() {
     alamat: '',
     instansi: '',
     keperluan: '',
+    whatsapp: '',
+    tempatKunjungan: '',
+    tanggalKunjungan: '',
+    jamKunjungan: '',
   });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -119,6 +123,13 @@ export default function FormPage() {
     setLoading(true);
 
     try {
+      // Validasi foto wajib
+      if (!preview) {
+        toast.error('Foto diri wajib diambil menggunakan kamera');
+        setLoading(false);
+        return;
+      }
+
       // Validasi hCaptcha token (hanya jika hCaptcha dikonfigurasi)
       if (HCAPTCHA_SITE_KEY && HCAPTCHA_SITE_KEY.length > 0 && !hcaptchaToken) {
         toast.error('Silakan selesaikan verifikasi CAPTCHA terlebih dahulu.');
@@ -175,7 +186,10 @@ export default function FormPage() {
         throw new Error(errorMessage);
       }
 
-      toast.success('Data berhasil disimpan!');
+      // Parse response JSON
+      const result = await response.json();
+
+      toast.success('Data berhasil disimpan! Terima kasih telah mendaftar.');
       
       // Reset hCaptcha setelah berhasil
       if (hcaptchaRef.current) {
@@ -183,9 +197,9 @@ export default function FormPage() {
         setHcaptchaToken(null);
       }
       
-      // Redirect ke halaman sukses dengan nama tamu
+      // Redirect ke success page dengan ID dan nama
       setTimeout(() => {
-        router.push(`/form/success?nama=${encodeURIComponent(formData.nama)}`);
+        router.push(`/form/success?id=${result.id}&nama=${encodeURIComponent(formData.nama)}&whatsapp=${encodeURIComponent(formData.whatsapp)}`);
       }, 1000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan. Silakan coba lagi.';
@@ -322,6 +336,93 @@ export default function FormPage() {
 
             <div className="space-y-2">
               <label
+                htmlFor="whatsapp"
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700"
+              >
+                <span className="text-green-600">📱</span>
+                Nomor WhatsApp Aktif <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                id="whatsapp"
+                required
+                value={formData.whatsapp}
+                onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                className="input-field"
+                placeholder="Contoh: 081234567890"
+                pattern="[0-9]{10,15}"
+                title="Masukkan nomor WhatsApp yang valid (10-15 digit)"
+              />
+              <p className="text-xs text-gray-500">
+                Masukkan nomor WhatsApp aktif untuk konfirmasi kunjungan
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="tempatKunjungan"
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700"
+              >
+                <span className="text-blue-600">🏛️</span>
+                Tempat Kunjungan <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="tempatKunjungan"
+                required
+                value={formData.tempatKunjungan}
+                onChange={(e) => setFormData({ ...formData, tempatKunjungan: e.target.value })}
+                className="input-field"
+              >
+                <option value="">Pilih tempat kunjungan</option>
+                <option value="Kantor Bupati">Kantor Bupati</option>
+                <option value="Rumah Jabatan">Rumah Jabatan</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="tanggalKunjungan"
+                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
+                >
+                  <span className="text-purple-600">📅</span>
+                  Tanggal Kunjungan <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="tanggalKunjungan"
+                  required
+                  value={formData.tanggalKunjungan}
+                  onChange={(e) => setFormData({ ...formData, tanggalKunjungan: e.target.value })}
+                  className="input-field"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="jamKunjungan"
+                  className="flex items-center gap-2 text-sm font-semibold text-gray-700"
+                >
+                  <span className="text-orange-600">🕐</span>
+                  Jam Kunjungan <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="time"
+                  id="jamKunjungan"
+                  required
+                  value={formData.jamKunjungan}
+                  onChange={(e) => setFormData({ ...formData, jamKunjungan: e.target.value })}
+                  className="input-field"
+                />
+                <p className="text-xs text-gray-500">
+                  Waktu Indonesia Tengah (WITA) - Format 24 jam
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label
                 htmlFor="keperluan"
                 className="flex items-center gap-2 text-sm font-semibold text-gray-700"
               >
@@ -346,8 +447,11 @@ export default function FormPage() {
                 className="flex items-center gap-2 text-sm font-semibold text-gray-700"
               >
                 <span className="text-green-600">📷</span>
-                Foto (Opsional)
+                Foto Diri <span className="text-red-500">*</span>
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Wajib menggunakan kamera untuk mengambil foto diri
+              </p>
               
               {/* Tombol Buka Kamera */}
               {!preview && (
@@ -357,7 +461,7 @@ export default function FormPage() {
                   disabled={showCamera}
                   className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-300 disabled:to-gray-400 text-white font-semibold rounded-lg transition-all shadow-md disabled:cursor-not-allowed"
                 >
-                  📸 Buka Kamera
+                  Buka Kamera
                 </button>
               )}
 
@@ -447,7 +551,7 @@ export default function FormPage() {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading || (!!HCAPTCHA_SITE_KEY && !hcaptchaToken)}
+                disabled={loading || (!!HCAPTCHA_SITE_KEY && !hcaptchaToken) || !preview}
                 className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 relative overflow-hidden"
               >
                 {loading ? (

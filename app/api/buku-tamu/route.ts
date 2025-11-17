@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
+    const status = searchParams.get('status') || '';
     const dateFilter = searchParams.get('date') || '';
     const skipCount = searchParams.get('skipCount') === 'true';
     
@@ -23,7 +24,13 @@ export async function GET(request: NextRequest) {
         { instansi: { contains: search } },
         { alamat: { contains: search } },
         { keperluan: { contains: search } },
+        { whatsapp: { contains: search } },
+        { tempatKunjungan: { contains: search } },
       ];
+    }
+
+    if (status) {
+      where.status = status;
     }
 
     if (dateFilter) {
@@ -95,7 +102,7 @@ export async function POST(request: NextRequest) {
       }
 
       logger.info('hCaptcha verified successfully');
-    } else if (process.env.HCAPTCHA_SECRET_KEY) {
+    } else if (process.env.HCAPTCHA_SECRET_KEY && process.env.NODE_ENV === 'production') {
       return NextResponse.json(
         { error: 'Token CAPTCHA diperlukan' },
         { status: 400 }
@@ -148,6 +155,11 @@ export async function POST(request: NextRequest) {
         alamat: sanitizedData.alamat,
         instansi: sanitizedData.instansi,
         keperluan: sanitizedData.keperluan,
+        whatsapp: sanitizedData.whatsapp || '',
+        tempatKunjungan: sanitizedData.tempatKunjungan || 'Kantor Bupati',
+        tanggalKunjungan: sanitizedData.tanggalKunjungan || new Date().toISOString().split('T')[0],
+        jamKunjungan: sanitizedData.jamKunjungan || '10:00',
+        status: 'MENUNGGU',
         fotoUrl: sanitizedData.fotoUrl,
       },
     });

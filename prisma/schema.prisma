@@ -9,13 +9,20 @@ datasource db {
 }
 
 model BukuTamu {
-  id        Int      @id @default(autoincrement())
-  nama      String   @db.VarChar(255)
-  alamat    String
-  instansi  String   @db.VarChar(255)
-  keperluan String
-  fotoUrl   String?  @db.VarChar(500)
-  createdAt DateTime @default(now())
+  id               Int      @id @default(autoincrement())
+  nama             String   @db.VarChar(255)
+  alamat           String
+  instansi         String   @db.VarChar(255)
+  keperluan        String
+  fotoUrl          String?  @db.VarChar(500)
+  createdAt        DateTime @default(now())
+  whatsapp         String?  @default("") @db.VarChar(20)
+  tempatKunjungan  String?  @default("Kantor Bupati") @db.VarChar(100)
+  tanggalKunjungan String?  @default("") @db.VarChar(10) @map("tanggal_kunjungan")
+  jamKunjungan     String?  @default("10:00") @db.VarChar(5) @map("jam_kunjungan")
+  status           String?  @default("MENUNGGU") @db.VarChar(20)
+  catatanBupati    String?  @map("catatan_bupati")
+  diarahkanKe      String?  @db.VarChar(255) @map("diarahkan_ke")
 
   @@map("buku_tamu")
 }
@@ -26,6 +33,7 @@ model Admin {
   password  String   @db.VarChar(255)
   name      String   @db.VarChar(255)
   createdAt DateTime @default(now())
+  role      String?  @default("ADMIN_BUPATI") @db.VarChar(20)
 
   @@map("admin")
 }
@@ -34,9 +42,9 @@ model Settings {
   id               Int      @id @default(1)
   logoUrl          String?  @db.VarChar(500)
   organizationName String   @default("Diskominfo Tanah Bumbu") @db.VarChar(255)
-  pageTitle        String   @default("Diskominfo Kabupaten Tanah Bumbu") @db.VarChar(255)
-  welcomeText      String?  @db.Text
+  welcomeText      String?
   updatedAt        DateTime @updatedAt
+  pageTitle        String   @default("Diskominfo Kabupaten Tanah Bumbu") @db.VarChar(255)
 
   @@map("settings")
 }

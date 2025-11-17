@@ -5,6 +5,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSettings } from '../contexts/SettingsContext';
+import { useAuth } from '../hooks/useAuth';
 
 interface Guest {
   id: number;
@@ -17,6 +18,7 @@ interface Guest {
 
 export default function TVDisplayPage() {
   const router = useRouter();
+  const { user, loading, logout } = useAuth();
   const { settings } = useSettings();
   const [guests, setGuests] = useState<Guest[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -145,6 +147,38 @@ export default function TVDisplayPage() {
     return `📆 ${new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
   };
 
+  // Loading screen saat autentikasi
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Memverifikasi akses...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Jika belum login, hook useAuth akan otomatis redirect ke /admin/login
+  // Tapi kita bisa tambahkan fallback manual jika diperlukan
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Akses Terbatas</h1>
+          <p className="text-gray-600 mb-4">Anda perlu login untuk mengakses halaman ini</p>
+          <button
+            onClick={() => router.push('/admin/login')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Login Sekarang
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6 relative">
       {/* Sasirangan Background Pattern */}
@@ -186,6 +220,20 @@ export default function TVDisplayPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* User Info & Logout */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">
+                👋 Halo, <span className="font-semibold">{user.name}</span>
+              </span>
+              <button
+                onClick={logout}
+                className="px-3 py-2 text-sm bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors flex items-center gap-1"
+                title="Logout"
+              >
+                🚪 Logout
+              </button>
+            </div>
+
             {/* Real-time Clock */}
             <div className="px-5 py-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg">
               <div className="text-center">

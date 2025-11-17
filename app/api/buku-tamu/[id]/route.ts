@@ -94,6 +94,75 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Check authentication
+    const session = await getSessionFromRequest(request);
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const entryId = parseInt(id);
+
+    if (isNaN(entryId)) {
+      return NextResponse.json(
+        { error: 'ID tidak valid' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const { status, diarahkanKe, catatanBupati } = body;
+    
+    // Validasi status
+    const validStatuses = ['MENUNGGU', 'DIARAHKAN', 'SELESAI', 'DITOLAK'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: 'Status tidak valid' },
+        { status: 400 }
+      );
+    }
+
+    // Check if entry exists
+    const entry = await prisma.bukuTamu.findUnique({
+      where: { id: entryId },
+    });
+
+    if (!entry) {
+      return NextResponse.json(
+        { error: 'Data tidak ditemukan' },
+        { status: 404 }
+      );
+    }
+
+    // Update data
+    const updatedEntry = await prisma.bukuTamu.update({
+      where: { id: entryId },
+      data: {
+        status,
+        diarahkanKe: diarahkanKe || null,
+        catatanBupati: catatanBupati || null,
+      }
+    });
+
+    return NextResponse.json(updatedEntry);
+  } catch (error) {
+    console.error('Update status error:', error);
+    return NextResponse.json(
+      { error: 'Gagal memperbarui status' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
