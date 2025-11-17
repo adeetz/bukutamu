@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import imageCompression from 'browser-image-compression';
 import { useSettings } from '../../contexts/SettingsContext';
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 import { BukuTamu, User, FormData, Pagination, StatusTamu, UserRole } from './types';
 import { formatDate, closeModal } from './helpers';

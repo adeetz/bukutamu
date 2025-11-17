@@ -4,7 +4,7 @@ import { useState, FormEvent, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 import imageCompression from 'browser-image-compression';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { useSettings } from '../contexts/SettingsContext';
