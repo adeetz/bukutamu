@@ -22,7 +22,7 @@ export default function TVDisplayPage() {
   const { settings } = useSettings();
   const [guests, setGuests] = useState<Guest[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(5);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [formUrl, setFormUrl] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>(() => {
@@ -58,14 +58,14 @@ export default function TVDisplayPage() {
     };
 
     fetchGuests();
-    const interval = setInterval(fetchGuests, 10000);
+    const interval = setInterval(fetchGuests, 5000); // Update setiap 5 detik
     return () => clearInterval(interval);
   }, [selectedDate]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-      setCountdown((prev) => (prev === 0 ? 10 : prev - 1));
+      setCountdown((prev) => (prev === 0 ? 5 : prev - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -78,27 +78,31 @@ export default function TVDisplayPage() {
 
     const startScroll = () => {
       scrollInterval = setInterval(() => {
-        if (isResettingRef.current) return;
+        if (isResettingRef.current || !container) return;
 
-        const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 5;
+        const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 10;
         
         if (isAtBottom && !isResettingRef.current) {
           clearInterval(scrollInterval);
           isResettingRef.current = true;
           pauseTimeout = setTimeout(() => {
-            container.scrollTo({ top: 0, behavior: 'smooth' });
+            if (container) {
+              container.scrollTo({ top: 0, behavior: 'smooth' });
+            }
             
-            // Tunggu animasi smooth scroll selesai (1 detik), baru mulai lagi
+            // Tunggu animasi smooth scroll selesai, baru mulai lagi
             setTimeout(() => {
               isResettingRef.current = false;
-              startScroll(); // Restart scroll
-            }, 1000);
-          }, 2000);
+              if (container && !isScrollPaused) {
+                startScroll(); // Restart scroll
+              }
+            }, 800);
+          }, 1500);
         } else if (!isResettingRef.current) {
-          // Scroll perlahan ke bawah (tanpa behavior untuk smooth)
+          // Scroll perlahan ke bawah
           container.scrollTop += 1;
         }
-      }, 60); // Scroll lebih lambat: 1px per 60ms
+      }, 50); // Scroll smooth: 1px per 50ms
     };
 
     startScroll();
