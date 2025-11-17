@@ -291,6 +291,22 @@ export default function AdminDashboard() {
     setCompleteNote('');
   };
 
+  // Shortcut: Langsung arahkan ke Bupati dan setujui
+  const handleBupatiDirect = async (id: number) => {
+    try {
+      // Step 1: Arahkan ke Bupati
+      await submitBupatiAction(id, StatusTamu.DIARAHKAN, 'Bupati', 'Langsung diarahkan ke Bupati');
+      
+      // Step 2: Auto-approve setelah 1 detik
+      setTimeout(async () => {
+        await submitBupatiAction(id, StatusTamu.SELESAI, '', 'Disetujui langsung oleh Bupati');
+      }, 1000);
+    } catch (error) {
+      console.error('Error in Bupati direct:', error);
+      toast.error('Gagal memproses shortcut Bupati');
+    }
+  };
+
   const submitBupatiAction = async (id: number, newStatus: StatusTamu, diarahkanKe: string = '', catatanBupati: string = '') => {
     try {
       const response = await fetch(`/api/buku-tamu/${id}`, {
@@ -749,17 +765,32 @@ export default function AdminDashboard() {
                                     <span className="hidden sm:inline">📍 Arahkan</span>
                                   </button>
                                   <button
-                                    onClick={() => handleBupatiAction(item.id, StatusTamu.SELESAI)}
-                                    className="px-3 sm:px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                    onClick={() => handleBupatiDirect(item.id)}
+                                    className="px-3 sm:px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                    title="Shortcut: Langsung arahkan ke Bupati dan setujui"
                                   >
-                                    <span className="inline sm:hidden">✅</span>
-                                    <span className="hidden sm:inline">✅ Setujui</span>
+                                    <span className="inline sm:hidden">👑</span>
+                                    <span className="hidden sm:inline">👑 Bupati Langsung</span>
                                   </button>
                                 </>
                               )}
-                              {(item.status === StatusTamu.SELESAI || item.status === StatusTamu.DIARAHKAN) && (
+                              {item.status === StatusTamu.DIARAHKAN && (
+                                <button
+                                  onClick={() => handleBupatiAction(item.id, StatusTamu.SELESAI)}
+                                  className="px-3 sm:px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors shadow-md text-xs sm:text-sm whitespace-nowrap"
+                                >
+                                  <span className="inline sm:hidden">✅</span>
+                                  <span className="hidden sm:inline">✅ Setujui</span>
+                                </button>
+                              )}
+                              {item.status === StatusTamu.SELESAI && (
                                 <span className="px-3 sm:px-4 py-2 bg-gray-100 text-green-600 font-semibold rounded-lg text-xs sm:text-sm">
                                   ✅ Selesai
+                                </span>
+                              )}
+                              {item.status === StatusTamu.DITOLAK && (
+                                <span className="px-3 sm:px-4 py-2 bg-gray-100 text-red-600 font-semibold rounded-lg text-xs sm:text-sm">
+                                  ❌ Ditolak
                                 </span>
                               )}
                             </>
